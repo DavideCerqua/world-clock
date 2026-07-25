@@ -4,7 +4,8 @@ A customizable world clock dashboard built with Next.js, React, TypeScript, and 
 
 ## Preview
 
-![World Clock Dashboard command-line startup screen](docs/dashboard.png)
+<img width="1577" height="840" alt="image" src="https://github.com/user-attachments/assets/bd091bd0-da41-43ae-9d0c-f966dd188cea" />
+
 
 ## Features
 
