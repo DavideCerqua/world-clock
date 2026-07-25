@@ -61,6 +61,14 @@ app/
 └── globals.css            Theme and component styles
 ```
 
+## Documentation
+
+Extended documentation is available in [`docs/`](docs/README.md):
+
+- [User guide](docs/user-guide.md)
+- [Architecture](docs/architecture.md)
+- [Development and deployment](docs/development.md)
+
 ## Data and privacy
 
 Dashboard preferences are stored only in the browser's `localStorage`. City search uses Open-Meteo's geocoding service. Map tiles come from OpenStreetMap, coordinate timezone resolution uses TimeAPI with an Open-Meteo fallback, and map-selected time is synchronized using [Time.Now](https://time.now/). No API credentials are required.
