@@ -50,6 +50,7 @@ export async function searchPlaces(
 
 export async function resolveLocationTime(latitude: number, longitude: number) {
   let timezone: string | undefined;
+  let serverUnixTime: number | undefined;
 
   try {
     const response = await fetch(
@@ -63,6 +64,10 @@ export async function resolveLocationTime(latitude: number, longitude: number) {
           : typeof payload.timezone === "string"
             ? payload.timezone
             : undefined;
+        const currentUtcTime = typeof payload.currentUtcTime === "string"
+          ? Date.parse(payload.currentUtcTime)
+          : Number.NaN;
+        if (Number.isFinite(currentUtcTime)) serverUnixTime = currentUtcTime / 1000;
       }
     }
   } catch {
@@ -81,12 +86,10 @@ export async function resolveLocationTime(latitude: number, longitude: number) {
   if (!timezone) throw new Error("No timezone returned");
   new Intl.DateTimeFormat("en-GB", { timeZone: timezone }).format(new Date());
 
-  const timezonePath = timezone.split("/").map(encodeURIComponent).join("/");
-  const response = await fetch(`https://time.now/developer/api/timezone/${timezonePath}`);
-  if (!response.ok) throw new Error("Time.Now request failed");
-  const payload: unknown = await response.json();
-  const serverUnixTime = isRecord(payload) ? Number(payload.unixtime) : Number.NaN;
-  if (!Number.isFinite(serverUnixTime)) throw new Error("Time.Now returned an invalid time");
-
-  return { timezone, serverUnixTime, resolvedAt: Date.now() };
+  const resolvedAt = Date.now();
+  return {
+    timezone,
+    serverUnixTime: serverUnixTime ?? resolvedAt / 1000,
+    resolvedAt,
+  };
 }

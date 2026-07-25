@@ -41,8 +41,9 @@ Map selection follows a separate flow:
 2. TimeAPI resolves the coordinates to an IANA timezone.
 3. If that request fails or has no timezone, Open-Meteo forecast data is used as a
    fallback resolver.
-4. Time.Now returns a synchronized Unix timestamp for the resolved timezone.
-5. The browser advances that timestamp locally from the recorded resolution time.
+4. When available, the UTC time returned by TimeAPI provides the initial timestamp;
+   otherwise the application uses the browser clock.
+5. The browser advances the timestamp locally from the recorded resolution time.
 
 No API credentials are used.
 
@@ -53,7 +54,6 @@ No API credentials are used.
 | Open-Meteo Geocoding API | City and country search |
 | TimeAPI | Primary coordinate-to-timezone resolution |
 | Open-Meteo Forecast API | Fallback coordinate-to-timezone resolution |
-| Time.Now API | Synchronized time for a selected map timezone |
 | OpenStreetMap | Leaflet map tiles |
 | Google Fonts | Selected dashboard font and font previews |
 
@@ -81,4 +81,3 @@ between browsers.
 - The daylight terminator is an approximation calculated in the browser.
 - Network failures affect search, map tiles, map timezone resolution, synchronized
   map time, and remote fonts, but existing clock cards continue to use local time.
-

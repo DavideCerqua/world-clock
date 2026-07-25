@@ -71,7 +71,7 @@ Extended documentation is available in [`docs/`](docs/README.md):
 
 ## Data and privacy
 
-Dashboard preferences are stored only in the browser's `localStorage`. City search uses Open-Meteo's geocoding service. Map tiles come from OpenStreetMap, coordinate timezone resolution uses TimeAPI with an Open-Meteo fallback, and map-selected time is synchronized using [Time.Now](https://time.now/). No API credentials are required.
+Dashboard preferences are stored only in the browser's `localStorage`. City search uses Open-Meteo's geocoding service. Map tiles come from OpenStreetMap, and coordinate timezone resolution uses TimeAPI with an Open-Meteo fallback. No API credentials are required.
 
 Map data is © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright) and displayed with [Leaflet](https://leafletjs.com/). Keep the on-map OpenStreetMap attribution visible when redistributing the application.
 

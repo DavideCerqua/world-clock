@@ -63,7 +63,7 @@ immutable assets can use long-lived caching because their names are content hash
 ## Network requirements
 
 The browser, rather than the Next.js server, contacts map, geocoding, timezone,
-time-synchronization, and font providers. Content Security Policy or network
+and font providers. Content Security Policy or network
 allowlists must permit the hosts identified in
 [Architecture](architecture.md#external-services).
 
@@ -95,4 +95,3 @@ a tile-network problem from an initialization problem.
 Supported timezone names come from `Intl.supportedValuesOf("timeZone")` when the
 runtime provides it. Upgrade the browser or runtime if its timezone database is
 outdated.
-
