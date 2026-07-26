@@ -12,6 +12,7 @@ interactions run in the browser.
 | `app/page.tsx` | Dashboard rendering, UI state, persistence, drag and drop, and dialogs |
 | `app/LeafletWorldMap.tsx` | Dynamically loaded Leaflet map, user/city markers, and daylight terminator |
 | `app/hooks/useNow.ts` | Shared current-time updates |
+| `app/hooks/useLiveGeolocation.ts` | One-shot browser geolocation and locality/timezone resolution |
 | `app/lib/clock.ts` | Clock creation, timezone discovery, and cached date/time formatting |
 | `app/lib/services.ts` | Geocoding, coordinate-to-timezone lookup, and time synchronization |
 | `app/lib/constants.ts` | Defaults, storage keys, languages, fonts, and colors |
@@ -20,7 +21,7 @@ interactions run in the browser.
 | `app/globals.css` | Layout, themes, responsive behavior, and component styling |
 
 `page.tsx` is a client component because it depends on browser features including
-`localStorage`, drag and drop, fullscreen, and timezone detection. Leaflet is
+`localStorage`, geolocation, drag and drop, fullscreen, and timezone detection. Leaflet is
 dynamically imported in an effect so that it is initialized only in the browser.
 
 ## Time and location data flow
@@ -45,6 +46,15 @@ Map selection follows a separate flow:
    otherwise the application uses the browser clock.
 5. The browser advances the timestamp locally from the recorded resolution time.
 
+On initial load, the browser Geolocation API is requested once when the persisted
+geolocation preference is enabled. Granted coordinates follow the same
+timezone-resolution path. BigDataCloud reverse geocoding provides the current city
+and country label. The flow updates the stable `user-location` clock and default map
+location. A denial, disabled preference, or error does not alter the dashboard.
+For naming, the application prefers the more precise locality fields before the
+broader city field so nearby municipalities are not replaced by a metropolitan
+administrative city.
+
 No API credentials are used.
 
 ## External services
@@ -54,6 +64,7 @@ No API credentials are used.
 | Open-Meteo Geocoding API | City and country search |
 | TimeAPI | Primary coordinate-to-timezone resolution |
 | Open-Meteo Forecast API | Fallback coordinate-to-timezone resolution |
+| BigDataCloud Free Reverse Geocoding | Current city and country for consented live coordinates |
 | OpenStreetMap | Leaflet map tiles |
 | Google Fonts | Selected dashboard font and font previews |
 
@@ -72,7 +83,8 @@ The application writes two JSON values to `localStorage`:
 
 Stored data is validated and constrained during restoration. Invalid or unsupported
 timezones are omitted. There is no server-side persistence or synchronization
-between browsers.
+between browsers. See [GDPR and geolocation](gdpr-and-geolocation.md) for the
+complete privacy analysis and publication checklist.
 
 ## Design constraints
 

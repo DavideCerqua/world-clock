@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { CircleMarker, Map as LeafletMap, Polyline } from "leaflet";
+import type { CircleMarker, Map as LeafletMap, Marker, Polyline } from "leaflet";
 import { translate } from "./lib/i18n";
 import type { Language } from "./lib/types";
 
@@ -11,6 +11,7 @@ type CityPin = Coordinates & { id: string; label: string };
 type Props = {
   now: Date | null;
   selectedLocation: Coordinates | null;
+  userLocation: Coordinates | null;
   cityPins: CityPin[];
   selectedCityPinId: string | null;
   cityPinColor: string;
@@ -42,6 +43,7 @@ function getTerminatorPoints(date: Date): [number, number][] {
 export default function LeafletWorldMap({
   now,
   selectedLocation,
+  userLocation,
   cityPins,
   selectedCityPinId,
   cityPinColor,
@@ -57,6 +59,7 @@ export default function LeafletWorldMap({
   const [isMapReady, setIsMapReady] = useState(false);
   const mapRef = useRef<LeafletMap | null>(null);
   const markerRef = useRef<CircleMarker | null>(null);
+  const userMarkerRef = useRef<Marker | null>(null);
   const cityMarkersRef = useRef<CircleMarker[]>([]);
   const terminatorRef = useRef<Polyline | null>(null);
   const onSelectRef = useRef(onSelect);
@@ -153,6 +156,36 @@ export default function LeafletWorldMap({
     void updateMarker();
     return () => { cancelled = true; };
   }, [selectedLocation, locationPinColor]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function updateUserMarker() {
+      const map = mapRef.current;
+      if (!map) return;
+      const L = await import("leaflet");
+      if (cancelled) return;
+      userMarkerRef.current?.remove();
+      userMarkerRef.current = userLocation
+        ? L.marker([userLocation.latitude, userLocation.longitude], {
+            bubblingMouseEvents: false,
+            zIndexOffset: 1000,
+            icon: L.divIcon({
+              className: "user-location-marker",
+              html: `<span class="user-location-pin" style="--user-pin-color:${locationPinColor}" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="8" r="3.25"/><path d="M5.75 19c.55-4.05 2.65-6.1 6.25-6.1s5.7 2.05 6.25 6.1z"/></svg></span>`,
+              iconSize: [38, 46],
+              iconAnchor: [19, 46],
+            }),
+          }).addTo(map)
+        : null;
+      userMarkerRef.current?.on("click", () => onCityPinSelectRef.current("user-location"));
+    }
+    void updateUserMarker();
+    return () => {
+      cancelled = true;
+      userMarkerRef.current?.remove();
+      userMarkerRef.current = null;
+    };
+  }, [isMapReady, locationPinColor, userLocation]);
 
   useEffect(() => {
     let cancelled = false;

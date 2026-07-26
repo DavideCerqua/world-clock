@@ -10,6 +10,8 @@ A customizable world clock dashboard built with Next.js, React, TypeScript, and 
 ## Features
 
 - Search for cities and countries worldwide.
+- Request browser location on load to add or update a current-location clock and
+  map default, including reverse-geocoded city naming and a user-icon map pin.
 - Reorder clock cards with drag and drop.
 - Customize card colors, corner shapes, typography, theme, UI style, background,
   map colors, and grid layout.
@@ -70,18 +72,19 @@ Extended documentation is available in [`docs/`](docs/README.md):
 - [User guide](docs/user-guide.md)
 - [Architecture](docs/architecture.md)
 - [Development and deployment](docs/development.md)
+- [GDPR and geolocation](docs/gdpr-and-geolocation.md)
 - [Functional Design Document](docs/functional-design-document.md)
 - [Training materials](docs/training-materials.md)
 
 ## Data and privacy
 
-Dashboard preferences are stored only in the browser's `localStorage`. City search uses Open-Meteo's geocoding service. Map tiles come from OpenStreetMap, and coordinate timezone resolution uses TimeAPI with an Open-Meteo fallback. No API credentials are required.
+Dashboard preferences are stored only in the browser's `localStorage`. City search uses Open-Meteo's geocoding service. Map tiles come from OpenStreetMap, and coordinate timezone resolution uses TimeAPI with an Open-Meteo fallback. No API credentials are required. See [GDPR and geolocation](docs/gdpr-and-geolocation.md) for the complete location-data flow and deployment responsibilities.
 
 Map data is © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright) and displayed with [Leaflet](https://leafletjs.com/). Keep the on-map OpenStreetMap attribution visible when redistributing the application.
 
 ## Deployment
 
-The application can run on any platform that supports Next.js and Node.js. Both development and production servers bind to `0.0.0.0:3000`, which also makes the project suitable for a Raspberry Pi or local-network display.
+The application can run on any platform that supports Next.js and Node.js. Both development and production servers bind to `0.0.0.0:3000`, which also makes the project suitable for a Raspberry Pi or local-network display. Internet deployments must use HTTPS; browser geolocation is restricted to secure contexts. Production responses include CSP, framing, MIME-sniffing, referrer, and browser-permission security headers.
 
 ## Contributing
 

@@ -186,6 +186,46 @@ main {
 .fullscreen-button { font-size: 1.6rem; }
 .theme-button { font-size: .8rem; }
 
+.support-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .65rem;
+}
+
+.support-actions a {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: .55rem;
+  padding: .65rem .8rem;
+  color: var(--terminal-green);
+  text-align: center;
+  text-decoration: none;
+  background: var(--terminal-panel);
+  border: 1px solid var(--terminal-border);
+  border-radius: inherit;
+}
+
+.support-actions a:hover,
+.support-actions a:focus-visible {
+  color: var(--terminal-panel);
+  background: var(--terminal-green);
+}
+
+.support-actions svg {
+  width: 1.35rem;
+  height: 1.35rem;
+  flex: 0 0 auto;
+  fill: currentColor;
+}
+
+.support-actions .paypal-link { color: #63a6ff; }
+
+@media (max-width: 430px) {
+  .support-actions { grid-template-columns: 1fr; }
+}
+
 .settings-panel {
   width: min(100%, 560px);
   max-height: 90vh;
@@ -256,6 +296,16 @@ main {
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 0;
+}
+
+.settings-group > .visibility-toggle + .visibility-toggle {
+  margin-top: .8rem;
+  padding-top: .8rem;
+  border-top: 1px solid var(--terminal-border);
+}
+
+.settings-group > .visibility-toggle + .setting-help {
+  margin-top: .55rem;
 }
 
 .toggle-control {
@@ -591,12 +641,14 @@ button:focus-visible, input:focus-visible {
   overflow: visible;
   gap: .55rem;
   align-content: start;
-  align-items: start;
+  align-items: stretch;
+  grid-auto-rows: 1fr;
 }
 
 .clock-card {
   position: relative;
   display: flex;
+  height: 100%;
   min-height: 0;
   flex-direction: column;
   justify-content: flex-start;
@@ -668,15 +720,22 @@ button:focus-visible, input:focus-visible {
   z-index: 1;
   top: 0;
   left: 50%;
+  display: flex;
+  width: 9.5rem;
+  height: 1.55rem;
+  align-items: center;
+  justify-content: center;
   transform: translate(-50%, -50%);
-  padding: calc(.18rem * var(--card-scale, 1)) calc(.45rem * var(--card-scale, 1));
+  padding: .18rem .45rem;
+  overflow: hidden;
   color: #e6fff0;
   background: #0b3b24;
   border: 1px solid #58ff9f;
   border-radius: 2px;
   font-family: var(--terminal-font);
-  font-size: calc(.75rem * var(--card-scale, 1));
+  font-size: .75rem;
   line-height: 1;
+  text-overflow: ellipsis;
   white-space: nowrap;
   pointer-events: none;
   font-weight: 600;
@@ -793,7 +852,7 @@ button:focus-visible, input:focus-visible {
   height: auto;
   overflow: visible;
   align-content: start;
-  grid-auto-rows: auto;
+  grid-auto-rows: 1fr;
 }
 
 .has-multiple-clock-rows .clock-card {
@@ -927,6 +986,33 @@ button:focus-visible, input:focus-visible {
   min-height: 140px;
   background: #dce7df;
   font-family: var(--terminal-font);
+}
+
+.leaflet-map .user-location-marker {
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 0;
+}
+
+.user-location-pin {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  color: #ffffff;
+  background: var(--user-pin-color, #58ff9f);
+  border: 3px solid #ffffff;
+  border-radius: 50% 50% 50% 8px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, .4);
+  transform: rotate(45deg);
+}
+
+.user-location-pin svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+  transform: rotate(-45deg);
 }
 
 .leaflet-map .leaflet-tile-pane {

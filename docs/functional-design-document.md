@@ -27,7 +27,7 @@ application backend.
 - display live clocks for supported IANA timezones;
 - find cities and countries through location search;
 - add, remove, reorder, resize, and recolor city cards;
-- identify a local-timezone card;
+- distinguish the geocoded Live location from manually Pinned locations;
 - inspect location time through an interactive world map;
 - associate map pins with city cards;
 - customize layout, typography, language, background, UI style, theme, and card
@@ -65,17 +65,41 @@ not access-control levels.
 - The system shall render one card for each configured clock.
 - Each card shall display city, optional country, local date, local time, timezone,
   and UTC offset.
+- City cards shall have a consistent default height across the grid.
 - Displayed time shall update once per second.
 - Time formatting shall use the browser's IANA timezone implementation.
 
 ### FR-2: Clock management
 
+- The system shall provide a persisted setting controlling startup geolocation.
+- The startup geolocation setting shall default to enabled.
+- On each load, the system shall request browser geolocation only when that setting
+  is enabled.
+- Enabling the setting during a session shall request geolocation immediately.
+- Granted coordinates shall create or update one stable Live location card.
+- The Live location card shall use the resolved timezone, retain its coordinates,
+  and be marked local.
+- The system shall reverse-geocode live coordinates into a city and country name.
+- Latitude and longitude shall appear in Live location card metadata, not its
+  heading.
+- A newly created Live location card shall be first in the grid.
+- If the user manually reorders that card, later location updates shall preserve its
+  chosen position.
+- Granted coordinates shall become the map's default location.
+- Denied, unavailable, or timed-out geolocation shall leave the dashboard intact.
 - Users shall be able to search for cities, countries, regions, and timezone names.
 - Users shall be able to add and remove clock cards.
 - Duplicate city/timezone combinations shall be rejected.
 - Users shall be able to reorder cards with drag and drop.
 - Users shall be able to resize a card between 70% and 150%.
-- Users shall be able to designate or remove a local-timezone card.
+- Users shall be able to pin or unpin ordinary city cards.
+- Manually pinned cards shall use the Pinned location label.
+- Only the geocoded `user-location` card shall use the Live location label.
+- The Live location card shall not expose the manual pin/unpin action.
+- Live and Pinned location border badges shall use the same dimensions and text
+  size, independently of card scale.
+- Reverse geocoding shall prefer locality-level names over broader city-level
+  administrative names.
 
 ### FR-3: Card appearance
 
@@ -114,6 +138,8 @@ Coke.
 - The map shall show an approximate day/night terminator.
 - Selecting an arbitrary map point shall resolve its timezone and show local time.
 - Each clock with known coordinates shall have a city pin.
+- The Live location shall use a persistent person-icon pin instead of a
+  standard city circle.
 - The selected arbitrary location and city pins shall use distinct configurable
   colors.
 - Selecting a city pin shall scroll to and highlight its corresponding card.
@@ -167,6 +193,17 @@ Coke.
 4. The system writes validated settings to `localStorage`.
 5. On the next visit, the system restores preferences before normal saving begins.
 
+### Load with current-location permission
+
+1. The application restores existing browser data.
+2. It requests high-accuracy browser geolocation.
+3. The browser returns coordinates or an error.
+4. For granted coordinates, the application resolves the timezone and reverse
+   geocodes the current city/country.
+5. It creates or updates the stable `user-location` card and map default.
+6. It persists the updated card and settings.
+7. For denial or failure, it shows feedback without changing the dashboard.
+
 ### Upload a background
 
 1. The user selects Image as the background type.
@@ -204,6 +241,8 @@ language. See [Architecture](architecture.md#persistence) for storage boundaries
 | Primary timezone resolver fails | Try the Open-Meteo fallback |
 | All map resolvers fail | Show a localized map-time error |
 | Fullscreen request fails | Show localized fullscreen feedback |
+| Geolocation is denied or unavailable | Keep the dashboard unchanged and show localized feedback |
+| Startup geolocation is disabled | Do not request location and retain existing location data |
 | Invalid saved data | Ignore or constrain the invalid value |
 | Unsupported background image | Reject it and list supported formats |
 | Background image exceeds 1.5 MB | Reject it and show the size limit |
@@ -235,6 +274,11 @@ language. See [Architecture](architecture.md#persistence) for storage boundaries
 | AT-10 | Upload unsupported or oversized image | File is rejected with localized feedback |
 | AT-11 | Reset background | Active style/theme background returns |
 | AT-12 | Disable network after clocks load | Existing clocks continue ticking locally |
+| AT-13 | Grant location access on load | Live location card and map default use the returned coordinates |
+| AT-14 | Deny location access on load | Existing dashboard remains unchanged and feedback appears |
+| AT-15 | Disable startup geolocation and reload | No geolocation request is made |
+| AT-16 | Grant location for a new profile | Current city card is first, coordinates are metadata, and a user-icon pin appears |
+| AT-17 | Drag Live location and reload | Updated live location retains the user-selected card order |
 
 ## 10. Change-control checklist
 
@@ -247,4 +291,3 @@ Before approving a feature change:
 5. Run `npm run check`.
 6. Manually exercise affected browser APIs and external-service failures.
 7. Update the user guide, architecture notes, and this FDD.
-

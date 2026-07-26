@@ -93,3 +93,31 @@ export async function resolveLocationTime(latitude: number, longitude: number) {
     resolvedAt,
   };
 }
+
+export async function resolveCurrentLocationName(
+  latitude: number,
+  longitude: number,
+  language = "en",
+) {
+  const response = await fetch(
+    `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude.toFixed(6)}&longitude=${longitude.toFixed(6)}&localityLanguage=${encodeURIComponent(language)}`,
+  );
+  if (!response.ok) throw new Error("Reverse geocoding failed");
+
+  const payload: unknown = await response.json();
+  if (!isRecord(payload)) throw new Error("Reverse geocoding returned invalid data");
+
+  const city = typeof payload.locality === "string" && payload.locality.trim()
+    ? payload.locality.trim()
+    : typeof payload.localityName === "string" && payload.localityName.trim()
+      ? payload.localityName.trim()
+      : typeof payload.city === "string" && payload.city.trim()
+        ? payload.city.trim()
+        : undefined;
+  const country = typeof payload.countryName === "string" && payload.countryName.trim()
+    ? payload.countryName.trim()
+    : undefined;
+
+  if (!city) throw new Error("Reverse geocoding returned no city");
+  return { city, country };
+}

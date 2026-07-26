@@ -4,6 +4,7 @@ This directory contains the extended documentation for World Clock Dashboard.
 
 ## Contents
 
+- [GDPR and geolocation](gdpr-and-geolocation.md) — location data flow, retention, user controls, and publisher responsibilities.
 - [User guide](user-guide.md) — add, arrange, and customize clocks; use the map and presentation mode.
 - [Architecture](architecture.md) — application structure, state, persistence, and external-service data flow.
 - [Development and deployment](development.md) — local setup, validation, production builds, and operational notes.

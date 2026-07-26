@@ -58,10 +58,27 @@ npm start
 
 The production server listens on `0.0.0.0:3000`. Put it behind a TLS-terminating
 reverse proxy for an internet-facing deployment. The Fullscreen API and browser
-storage work best in a secure context.
+storage work best in a secure context, and browser geolocation requires HTTPS
+outside localhost.
+
+`next.config.ts` applies a restrictive Content Security Policy and common browser
+security headers. If an external service or asset host changes, update the policy
+deliberately and retest the affected feature rather than broadly allowing every
+origin.
 
 Do not cache the HTML indefinitely when deploying new releases. Next.js-generated
 immutable assets can use long-lived caching because their names are content hashed.
+
+Before publishing:
+
+- run `npm ci` and `npm run check` using the supported Node.js version;
+- terminate the development server and serve the production build;
+- configure HTTPS, health checks, process supervision, and deployment logs;
+- review dependency advisories and provider usage/rate limits;
+- supply a real privacy notice and complete the
+  [GDPR/geolocation checklist](gdpr-and-geolocation.md); and
+- verify the CSP, geolocation prompt, map tiles, fonts, and all external API calls
+  on the final production origin.
 
 ## Network requirements
 

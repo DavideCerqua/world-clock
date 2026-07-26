@@ -28,11 +28,14 @@ After completing the material, learners should be able to:
 
 ### Demonstration
 
-1. Open the dashboard.
-2. Add New York and Tokyo.
-3. Reorder the cards.
-4. Right-click a card and resize it.
-5. Reload and verify persistence.
+1. Open the dashboard and review the browser location request.
+2. Grant access and identify the resolved city name, coordinate metadata, first-card
+   placement, user-icon pin, and map default.
+3. Disable and re-enable startup geolocation from Global Settings → Map.
+4. Add New York and Tokyo.
+5. Reorder the cards.
+6. Right-click a card and resize it.
+7. Reload and verify persistence and current-location behavior.
 
 ### Learner exercise
 
@@ -43,8 +46,10 @@ as local.
 ### Success criteria
 
 - Four intended cities are visible.
+- The learner can explain the effect of granting or denying location access.
 - Card order matches the requested sequence.
-- One card carries the local-timezone badge.
+- One card carries the Live location badge.
+- Manually marked cards use Pinned location rather than Live location.
 - Reloading retains the setup.
 
 ## Module 2: Map and pin interaction
@@ -204,4 +209,3 @@ A learner passes the practical assessment when they can independently:
 4. apply and reset a supported background;
 5. enter and exit presentation mode;
 6. explain what is stored locally and which functions require the network.
-

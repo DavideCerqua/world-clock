@@ -8,6 +8,7 @@ import {
   type CSSProperties,
 } from "react";
 import LeafletWorldMap from "./LeafletWorldMap";
+import { useLiveGeolocation } from "./hooks/useLiveGeolocation";
 import { useNow } from "./hooks/useNow";
 import { defaultClocks, formatClock, getSupportedTimezones, makeClock, timezoneLabel } from "./lib/clock";
 import {
@@ -41,6 +42,10 @@ import type {
 import { translate } from "./lib/i18n";
 import { resolveLocationTime, searchPlaces } from "./lib/services";
 
+function isLiveOrPinnedLocation(clock: Pick<ClockEntry, "id" | "isLocal">) {
+  return clock.id === "user-location" || clock.isLocal === true;
+}
+
 export default function HomePage() {
   const [clocks, setClocks] = useState<ClockEntry[]>(defaultClocks);
   const now = useNow();
@@ -50,7 +55,6 @@ export default function HomePage() {
   const [isLocationSearchLoading, setIsLocationSearchLoading] = useState(false);
   const [locationSearchFailed, setLocationSearchFailed] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [userTimeZone, setUserTimeZone] = useState<string | null>(null);
   const [colorPickerFor, setColorPickerFor] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<{ id: string; x: number; y: number } | null>(null);
   const [dashboardContextMenu, setDashboardContextMenu] = useState<{ x: number; y: number } | null>(null);
@@ -85,6 +89,7 @@ export default function HomePage() {
   const [locationPinColor, setLocationPinColor] = useState<string>(DEFAULT_MAP_COLORS.locationPin);
   const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
   const [isMapVisible, setIsMapVisible] = useState(true);
+  const [isGeolocationEnabled, setIsGeolocationEnabled] = useState(true);
   const [draggedClockId, setDraggedClockId] = useState<string | null>(null);
   const [highlightedClockId, setHighlightedClockId] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<{ id: string; after: boolean } | null>(null);
@@ -108,8 +113,45 @@ export default function HomePage() {
     [timezoneOptions],
   );
 
+  useLiveGeolocation({
+    enabled: isGeolocationEnabled,
+    isReady: isRestored,
+    language,
+    onStatus: setStatus,
+    onResolved: ({ city, country, coordinateLabel, latitude, longitude, timezone }) => {
+      setDefaultMapLocation({
+        city,
+        country: country ?? coordinateLabel,
+        latitude,
+        longitude,
+      });
+      setClocks((current) => {
+        const existing = current.some((clock) => clock.id === "user-location");
+        if (existing) {
+          return current.map((clock) => clock.id === "user-location"
+            ? {
+                ...clock,
+                city,
+                country,
+                timezone,
+                latitude,
+                longitude,
+                isLocal: true,
+              }
+            : clock);
+        }
+        return [
+          {
+            ...makeClock(timezone, "user-location", city, country, { latitude, longitude }),
+            isLocal: true,
+          },
+          ...current,
+        ];
+      });
+    },
+  });
+
   useEffect(() => {
-    setUserTimeZone(Intl.DateTimeFormat().resolvedOptions().timeZone || null);
     try {
       const savedSettings = localStorage.getItem(SETTINGS_STORAGE_KEY);
       if (savedSettings) {
@@ -165,6 +207,9 @@ export default function HomePage() {
         }
         if (typeof settings.isMapVisible === "boolean") {
           setIsMapVisible(settings.isMapVisible);
+        }
+        if (typeof settings.isGeolocationEnabled === "boolean") {
+          setIsGeolocationEnabled(settings.isGeolocationEnabled);
         }
         const savedMapLocation = settings.defaultMapLocation;
         if (
@@ -251,7 +296,11 @@ export default function HomePage() {
     }
     link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}&display=swap`;
     document.documentElement.style.setProperty("--app-font", `"${family}", system-ui, sans-serif`);
+  }, [fontFamily]);
+
+  useEffect(() => {
     if (!isRestored) return;
+    const family = fontFamily.trim() || DEFAULT_FONT;
     try {
       localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify({
         fontFamily: family,
@@ -269,6 +318,7 @@ export default function HomePage() {
         locationPinColor,
         language,
         isMapVisible,
+        isGeolocationEnabled,
       }));
     } catch {
       setStatus(t("savePreferenceError"));
@@ -289,6 +339,7 @@ export default function HomePage() {
     locationPinColor,
     language,
     isMapVisible,
+    isGeolocationEnabled,
     isRestored,
   ]);
 
@@ -432,6 +483,7 @@ export default function HomePage() {
   const hasMultipleClockRows = Math.ceil(clocks.length / cardsPerRow) >= 2;
   const cityPins = useMemo(
     () => clocks.flatMap((clock) =>
+      clock.id !== "user-location" &&
       typeof clock.latitude === "number" &&
       Number.isFinite(clock.latitude) &&
       typeof clock.longitude === "number" &&
@@ -446,6 +498,14 @@ export default function HomePage() {
     ),
     [clocks],
   );
+  const userLocation = useMemo(() => {
+    const clock = clocks.find((item) => item.id === "user-location");
+    return clock &&
+      typeof clock.latitude === "number" &&
+      typeof clock.longitude === "number"
+      ? { latitude: clock.latitude, longitude: clock.longitude }
+      : null;
+  }, [clocks]);
 
   const formattedClocks = useMemo(() => {
     if (!now) return new Map<string, ClockParts>();
@@ -454,13 +514,13 @@ export default function HomePage() {
   const localClockTextColor = useMemo(
     () =>
       clocks.find((clock) =>
-        (clock.isLocal ?? clock.timezone === userTimeZone) && clock.textColor,
+        isLiveOrPinnedLocation(clock) && clock.textColor,
       )?.textColor ?? (
         uiStyle === "coke"
           ? (theme === "light" ? "#9b0000" : "#ffffff")
           : (theme === "light" ? "#ffffff" : LOCAL_COLORS.text)
       ),
-    [clocks, theme, uiStyle, userTimeZone],
+    [clocks, theme, uiStyle],
   );
   const selectedMapTime = useMemo(
     () => {
@@ -624,11 +684,11 @@ export default function HomePage() {
   }
 
   function resetColors(clock: ClockEntry) {
-    const resetsLocalText = clock.isLocal ?? clock.timezone === userTimeZone;
+    const resetsLocalText = isLiveOrPinnedLocation(clock);
     setClocks((current) =>
       current.map((item) => {
         const isTarget = item.id === clock.id;
-        const isLocal = item.isLocal ?? item.timezone === userTimeZone;
+        const isLocal = isLiveOrPinnedLocation(item);
         if (isTarget) {
           return { ...item, bgColor: undefined, textColor: undefined, metaColor: undefined };
         }
@@ -1069,6 +1129,19 @@ export default function HomePage() {
                   <strong aria-hidden="true">{isMapVisible ? "ON" : "OFF"}</strong>
                 </span>
               </label>
+              <label className="visibility-toggle" htmlFor="geolocation-on-startup">
+                <span>{t("askLocationOnStartup")}</span>
+                <span className="toggle-control">
+                  <input
+                    id="geolocation-on-startup"
+                    type="checkbox"
+                    checked={isGeolocationEnabled}
+                    onChange={(event) => setIsGeolocationEnabled(event.currentTarget.checked)}
+                  />
+                  <strong aria-hidden="true">{isGeolocationEnabled ? "ON" : "OFF"}</strong>
+                </span>
+              </label>
+              <small className="setting-help">{t("askLocationHelp")}</small>
             </fieldset>
 
             <fieldset className="settings-group appearance-settings">
@@ -1135,6 +1208,33 @@ export default function HomePage() {
                 </button>
               </div>
             </fieldset>
+            <fieldset className="settings-group support-settings">
+              <legend>{t("support")}</legend>
+              <small className="setting-help">{t("reportProblemHelp")}</small>
+              <div className="support-actions">
+                <a
+                  href="https://github.com/DavideCerqua/world-clock/issues"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <svg aria-hidden="true" viewBox="0 0 24 24">
+                    <path d="M12 2a4 4 0 0 0-4 4v1.1A5 5 0 0 0 5 11v1H3v2h2v2H3v2h2.4A7 7 0 0 0 19 16v-2h2v-2h-2v-1a5 5 0 0 0-3-3.9V6a4 4 0 0 0-4-4Zm0 2a2 2 0 0 1 2 2v.2a8 8 0 0 0-4 0V6a2 2 0 0 1 2-2Zm-5 7a3 3 0 0 1 3-3h4a3 3 0 0 1 3 3v5a5 5 0 0 1-10 0v-5Zm3 0v2h2v-2h-2Zm4 0v2h2v-2h-2Z" />
+                  </svg>
+                  <span>{t("reportProblem")}</span>
+                </a>
+                <a
+                  className="paypal-link"
+                  href="https://paypal.me/DavideCerqua"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <svg aria-hidden="true" viewBox="0 0 24 24">
+                    <path d="M8.2 3h7.1c3.7 0 5.6 2.1 5 5.2-.7 3.8-3.4 5.7-7.3 5.7h-2l-1.1 6.2H5.8L8.2 3Zm3.5 3-1 5.3h2.1c1.9 0 3-.9 3.3-2.6.3-1.7-.6-2.7-2.4-2.7h-2Z" />
+                  </svg>
+                  <span>{t("donate")}</span>
+                </a>
+              </div>
+            </fieldset>
             {isPresentationMode && (
               <button className="exit-presentation" type="button" onClick={exitPresentationMode}>
                 {t("exitPresentation")}
@@ -1151,7 +1251,7 @@ export default function HomePage() {
         <div className="clock-grid" style={{ "--grid-columns": cardsPerRow } as CSSProperties}>
           {clocks.map((clock) => {
             const formatted = formattedClocks.get(clock.id);
-            const isLocal = clock.isLocal ?? clock.timezone === userTimeZone;
+            const isLocal = isLiveOrPinnedLocation(clock);
             const effectiveTextColor = isLocal
               ? localClockTextColor
               : clock.textColor ?? (
@@ -1233,13 +1333,24 @@ export default function HomePage() {
             >
               <div className="card-heading">
                 <h2>{clock.city}{clock.country ? ` (${clock.country})` : ""}</h2>
-                {isLocal && <span className="local-badge">{t("yourTimezone")}</span>}
+                {isLocal && (
+                  <span className="local-badge">
+                    {t(clock.id === "user-location" ? "liveLocation" : "pinnedLocation")}
+                  </span>
+                )}
               </div>
               <div className={`time-value${formatted ? "" : " loading"}`}>
                 {formatted?.time ?? t("loading")}
               </div>
               <div className="meta">{formatted?.date ?? t("loading")}</div>
               <div className="meta">{clock.timezone}</div>
+              {clock.id === "user-location" &&
+                typeof clock.latitude === "number" &&
+                typeof clock.longitude === "number" && (
+                  <div className="meta">
+                    {clock.latitude.toFixed(4)}°, {clock.longitude.toFixed(4)}°
+                  </div>
+                )}
               <div className="meta">{formatted?.offset ?? t("loading")}</div>
 
               {colorPickerFor === clock.id && (
@@ -1271,7 +1382,7 @@ export default function HomePage() {
                           const value = event.target.value;
                           setClocks((current) =>
                             current.map((item) => {
-                              const itemIsLocal = item.isLocal ?? item.timezone === userTimeZone;
+                              const itemIsLocal = isLiveOrPinnedLocation(item);
                               if (field === "textColor" && isLocal && itemIsLocal) {
                                 return { ...item, textColor: value };
                               }
@@ -1300,19 +1411,21 @@ export default function HomePage() {
                   style={{ left: contextMenu.x, top: contextMenu.y }}
                   onClick={(event) => event.stopPropagation()}
                 >
-                  <button
-                    role="menuitem"
-                    onClick={() => {
-                      setClocks((current) =>
-                        current.map((item) =>
-                          item.id === clock.id ? { ...item, isLocal: !isLocal } : item,
-                        ),
-                      );
-                      setContextMenu(null);
-                    }}
-                  >
-                    {t(isLocal ? "removeLocal" : "setLocal")}
-                  </button>
+                  {clock.id !== "user-location" && (
+                    <button
+                      role="menuitem"
+                      onClick={() => {
+                        setClocks((current) =>
+                          current.map((item) =>
+                            item.id === clock.id ? { ...item, isLocal: !isLocal } : item,
+                          ),
+                        );
+                        setContextMenu(null);
+                      }}
+                    >
+                      {t(isLocal ? "unpinLocation" : "pinLocation")}
+                    </button>
+                  )}
                   <button
                     role="menuitem"
                     onClick={() => {
@@ -1402,6 +1515,7 @@ export default function HomePage() {
           <LeafletWorldMap
             now={now}
             selectedLocation={selectedMapLocation}
+            userLocation={userLocation}
             cityPins={cityPins}
             selectedCityPinId={highlightedClockId}
             cityPinColor={cityPinColor}
