@@ -26,8 +26,8 @@ Open global settings with the settings button. Available preferences include:
 - font family;
 - number of cards per row;
 - placement or visibility of the add-clock card;
-- terminal or classic interface style;
-- light or dark theme; and
+- terminal, classic, or Coke interface style;
+- light or dark mode for every interface style; and
 - map visibility.
 
 The theme can also be switched directly from the toolbar. Preferences and clock

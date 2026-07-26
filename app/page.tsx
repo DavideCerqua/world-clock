@@ -116,8 +116,10 @@ export default function HomePage() {
         if (typeof settings.isAddCardHidden === "boolean") {
           setIsAddCardHidden(settings.isAddCardHidden);
         }
-        if (settings.uiStyle === "terminal" || settings.uiStyle === "classic") {
+        if (settings.uiStyle === "terminal" || settings.uiStyle === "classic" || settings.uiStyle === "coke") {
           setUiStyle(settings.uiStyle);
+        } else if (settings.visualTheme === "coke") {
+          setUiStyle("coke");
         }
         if (settings.theme === "dark" || settings.theme === "light") {
           setTheme(settings.theme);
@@ -387,8 +389,12 @@ export default function HomePage() {
     () =>
       clocks.find((clock) =>
         (clock.isLocal ?? clock.timezone === userTimeZone) && clock.textColor,
-      )?.textColor ?? (theme === "light" ? "#ffffff" : LOCAL_COLORS.text),
-    [clocks, theme, userTimeZone],
+      )?.textColor ?? (
+        uiStyle === "coke"
+          ? (theme === "light" ? "#9b0000" : "#ffffff")
+          : (theme === "light" ? "#ffffff" : LOCAL_COLORS.text)
+      ),
+    [clocks, theme, uiStyle, userTimeZone],
   );
   const selectedMapTime = useMemo(
     () => {
@@ -892,6 +898,15 @@ export default function HomePage() {
                   />
                   {t("classic")}
                 </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="ui-style"
+                    checked={uiStyle === "coke"}
+                    onChange={() => setUiStyle("coke")}
+                  />
+                  {t("coke")}
+                </label>
               </div>
               <span>{t("theme")}</span>
               <div className="segmented-control">
@@ -926,9 +941,17 @@ export default function HomePage() {
               ? localClockTextColor
               : clock.textColor ?? (theme === "light" ? "#17251d" : "#e6f0ff");
             const effectiveMetaColor = clock.metaColor ??
-              (isLocal ? LOCAL_COLORS.meta : (theme === "light" ? "#51685a" : "#9fb2d1"));
+              (isLocal
+                ? (uiStyle === "coke" ? (theme === "light" ? "#a33a3a" : "#ffd0d0") : LOCAL_COLORS.meta)
+                : (theme === "light" ? "#51685a" : "#9fb2d1"));
             const cardStyle = {
-              ...(isLocal ? { background: LOCAL_COLORS.background } : {}),
+              ...(isLocal
+                ? {
+                    background: uiStyle === "coke"
+                      ? (theme === "light" ? "#ffe2e2" : "#7a0000")
+                      : LOCAL_COLORS.background,
+                  }
+                : {}),
               ...(clock.bgColor ? { background: clock.bgColor } : {}),
               "--clock-text": effectiveTextColor,
               "--clock-meta": effectiveMetaColor,

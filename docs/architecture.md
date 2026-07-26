@@ -68,7 +68,7 @@ The application writes two JSON values to `localStorage`:
 | Key | Data |
 | --- | --- |
 | `wc-clocks` | Ordered clock cards, labels, timezone, coordinates, colors, local marker, and scale |
-| `wc-settings` | Font, layout, add-card behavior, style, theme, map defaults and colors, language, and map visibility |
+| `wc-settings` | Font, layout, add-card behavior, UI style and light/dark theme, map defaults and colors, language, and map visibility |
 
 Stored data is validated and constrained during restoration. Invalid or unsupported
 timezones are omitted. There is no server-side persistence or synchronization

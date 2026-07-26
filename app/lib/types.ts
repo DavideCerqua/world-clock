@@ -49,7 +49,7 @@ export type DefaultMapLocation = {
 export type MapLocationResult = DefaultMapLocation & { id: number };
 
 export type Theme = "dark" | "light";
-export type UiStyle = "terminal" | "classic";
+export type UiStyle = "terminal" | "classic" | "coke";
 export type AddCardPlacement = "inline" | "next-row";
 export type Language = "en" | "it" | "es";
 

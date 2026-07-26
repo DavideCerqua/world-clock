@@ -1488,3 +1488,76 @@ button:focus-visible, input:focus-visible {
   border-color: rgba(30, 61, 94, .18);
   box-shadow: 0 16px 38px rgba(40, 73, 110, .16);
 }
+
+/* Coke is an employee-facing UI style layered over light/dark mode. */
+:root[data-ui-style="coke"] {
+  color-scheme: dark;
+  --terminal-bg: #160001;
+  --terminal-panel: #260304;
+  --terminal-green: #f40009;
+  --terminal-dim: #e5a4a6;
+  --terminal-border: #7d191d;
+}
+
+:root[data-ui-style="coke"] body {
+  color: #fffafa;
+  background-color: var(--terminal-bg);
+  background-image:
+    radial-gradient(circle at 12% 10%, rgba(244, 0, 9, .2), transparent 34%),
+    linear-gradient(145deg, #160001 0%, #2b0305 55%, #100001 100%);
+}
+
+:root[data-ui-style="coke"] .toolbar-actions,
+:root[data-ui-style="coke"] .settings-panel,
+:root[data-ui-style="coke"] .search-dialog,
+:root[data-ui-style="coke"] .context-menu,
+:root[data-ui-style="coke"] .world-map-section,
+:root[data-ui-style="coke"] .map-time-popup {
+  color: #fffafa;
+  background: rgba(38, 3, 4, .96);
+  border-color: var(--terminal-border);
+  box-shadow: 0 14px 34px rgba(90, 0, 4, .32);
+}
+
+:root[data-ui-style="coke"] .clock-card:not(.is-local) {
+  color: #fffafa;
+  background: rgba(43, 3, 5, .96);
+  border-color: var(--terminal-border);
+  box-shadow: 5px 5px 0 rgba(104, 0, 5, .5);
+}
+
+:root[data-ui-style="coke"] .local-badge {
+  color: #ffffff;
+  background: #d90008;
+  border-color: #ffffff;
+}
+
+:root[data-ui-style="coke"][data-theme="light"] {
+  color-scheme: light;
+  --terminal-bg: #fff4f4;
+  --terminal-panel: #ffffff;
+  --terminal-green: #d50008;
+  --terminal-dim: #88484b;
+  --terminal-border: #e5a0a3;
+}
+
+:root[data-ui-style="coke"][data-theme="light"] body {
+  color: #4b090c;
+  background-color: #fff4f4;
+  background-image:
+    radial-gradient(circle at 12% 10%, rgba(213, 0, 8, .1), transparent 34%),
+    linear-gradient(145deg, #ffffff 0%, #fff1f1 62%, #ffe4e5 100%);
+}
+
+:root[data-ui-style="coke"][data-theme="light"] .toolbar-actions,
+:root[data-ui-style="coke"][data-theme="light"] .settings-panel,
+:root[data-ui-style="coke"][data-theme="light"] .search-dialog,
+:root[data-ui-style="coke"][data-theme="light"] .context-menu,
+:root[data-ui-style="coke"][data-theme="light"] .world-map-section,
+:root[data-ui-style="coke"][data-theme="light"] .map-time-popup,
+:root[data-ui-style="coke"][data-theme="light"] .clock-card:not(.is-local) {
+  color: #4b090c;
+  background: rgba(255, 255, 255, .97);
+  border-color: var(--terminal-border);
+  box-shadow: 0 14px 32px rgba(132, 14, 20, .14);
+}
