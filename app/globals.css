@@ -337,6 +337,70 @@ main {
   font-size: .85rem;
 }
 
+.background-settings {
+  display: grid;
+  gap: .7rem;
+}
+
+.background-settings > label {
+  margin: 0;
+}
+
+.background-color-row,
+.background-gradient-controls label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.background-settings input[type="color"] {
+  width: 3.25rem;
+  height: 2rem;
+  padding: .1rem;
+  border: 1px solid var(--terminal-border);
+  background: transparent;
+  cursor: pointer;
+}
+
+.background-gradient-controls,
+.background-image-controls {
+  display: grid;
+  gap: .65rem;
+  padding: .7rem;
+  border: 1px solid var(--terminal-border);
+}
+
+.background-angle-row {
+  grid-template-columns: auto minmax(100px, 1fr) 3.5rem;
+}
+
+.background-angle-row input {
+  width: 100%;
+  accent-color: var(--terminal-green);
+}
+
+.background-angle-row output {
+  color: var(--terminal-green);
+  text-align: right;
+}
+
+.background-image-controls > input {
+  width: 100%;
+  padding: .65rem;
+  color: inherit;
+  background: #07110c;
+  border: 1px solid var(--terminal-border);
+}
+
+.background-image-controls small {
+  color: var(--terminal-dim);
+}
+
+.background-reset {
+  justify-self: end;
+}
+
 .layout-settings {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -423,6 +487,34 @@ main {
   cursor: pointer;
 }
 
+.card-shape-setting {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: auto minmax(120px, 1fr) minmax(5.5rem, auto);
+  align-items: center;
+  gap: .65rem;
+  padding-top: .75rem;
+  border-top: 1px solid var(--terminal-border);
+}
+
+.card-shape-setting label { font-weight: 700; }
+
+.card-shape-setting input {
+  width: 100%;
+  accent-color: var(--terminal-green);
+}
+
+.card-shape-setting output {
+  color: var(--terminal-dim);
+  text-align: right;
+}
+
+.card-shape-setting button {
+  grid-column: 2 / -1;
+  justify-self: end;
+  padding: .45rem .65rem;
+}
+
 .exit-presentation {
   width: 100%;
   margin-top: 1rem;
@@ -448,8 +540,7 @@ main {
 .presentation-mode .page-toolbar h1,
 .presentation-mode .theme-button,
 .presentation-mode .add-card,
-.presentation-mode > .status,
-.presentation-mode > .page-footer {
+.presentation-mode > .status {
   display: none;
 }
 
@@ -806,18 +897,6 @@ button:focus-visible, input:focus-visible {
   text-align: right;
 }
 
-.world-map {
-  position: relative;
-  height: calc(100% - 2rem);
-  min-height: 0;
-  overflow: hidden;
-  background: #07110c;
-  border: 1px solid var(--terminal-border);
-  cursor: grab;
-  touch-action: none;
-  user-select: none;
-}
-
 .leaflet-map-shell {
   position: relative;
   height: 100%;
@@ -900,104 +979,6 @@ button:focus-visible, input:focus-visible {
   background: rgba(248, 252, 248, .94);
 }
 
-.world-map:active { cursor: grabbing; }
-
-.map-viewport {
-  position: absolute;
-  inset: 0;
-  transform-origin: center;
-  transition: transform 120ms ease-out;
-  will-change: transform;
-}
-
-.world-map:active .map-viewport { transition: none; }
-
-.map-viewport img,
-.map-viewport svg {
-  position: absolute;
-  inset: 0;
-  display: block;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.map-viewport img {
-  object-fit: fill;
-  opacity: .52;
-  filter: invert(1) sepia(.5) hue-rotate(85deg) saturate(.7) brightness(.8);
-}
-
-.map-viewport svg { overflow: visible; }
-
-.map-controls {
-  position: absolute;
-  top: .6rem;
-  right: .6rem;
-  z-index: 4;
-  display: flex;
-  gap: .3rem;
-}
-
-.map-controls button {
-  min-width: 34px;
-  height: 34px;
-  padding: .25rem;
-  color: var(--terminal-green);
-  background: rgba(5, 10, 8, .9);
-  border: 1px solid var(--terminal-border);
-  font-family: var(--terminal-font);
-}
-
-.map-coordinates {
-  position: absolute;
-  left: .6rem;
-  bottom: .5rem;
-  z-index: 4;
-  padding: .3rem .45rem;
-  color: var(--terminal-green);
-  background: rgba(5, 10, 8, .88);
-  border: 1px solid var(--terminal-border);
-  font: 700 .7rem var(--terminal-font);
-  pointer-events: none;
-}
-
-.terminator-line {
-  fill: none;
-  stroke: #ffbd69;
-  stroke-width: 2.5;
-  vector-effect: non-scaling-stroke;
-  filter: drop-shadow(0 0 4px rgba(255, 189, 105, .8));
-}
-
-.subsolar-glow {
-  fill: rgba(255, 189, 105, .18);
-  stroke: rgba(255, 189, 105, .45);
-  stroke-width: 1;
-  vector-effect: non-scaling-stroke;
-}
-
-.subsolar-point {
-  fill: #fff4b0;
-  stroke: #ffbd69;
-  stroke-width: 2;
-  vector-effect: non-scaling-stroke;
-}
-
-.selected-point-ring {
-  fill: rgba(88, 255, 159, .15);
-  stroke: var(--terminal-green);
-  stroke-width: 2;
-  vector-effect: non-scaling-stroke;
-}
-
-.selected-point-dot {
-  fill: var(--terminal-green);
-  stroke: #050807;
-  stroke-width: 2;
-  vector-effect: non-scaling-stroke;
-}
-
 .map-time-popup {
   position: absolute;
   top: .6rem;
@@ -1067,15 +1048,6 @@ button:focus-visible, input:focus-visible {
   border: 0;
 }
 
-.map-loading {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  color: var(--terminal-green);
-  font-family: var(--terminal-font);
-}
-
 .status {
   color: #86e5b2;
   font-family: var(--terminal-font);
@@ -1086,20 +1058,6 @@ button:focus-visible, input:focus-visible {
   content: "[SYS] ";
   color: var(--terminal-green);
 }
-
-.page-footer {
-  display: none;
-  margin-top: 1.25rem;
-  color: #9fb2d1;
-  text-align: center;
-}
-
-.page-footer a {
-  color: #9fc8ff;
-  text-underline-offset: .2em;
-}
-
-.page-footer a:hover { color: #d4e8ff; }
 
 @keyframes status-lifetime {
   0%, 80% { opacity: 1; }
@@ -1315,8 +1273,6 @@ button:focus-visible, input:focus-visible {
     min-height: 140px;
     padding: .7rem;
   }
-  .world-map { height: calc(100% - 1.75rem); }
-  .map-caption-actions > span { display: none; }
 }
 
 /* Global appearance variants */
@@ -1345,14 +1301,8 @@ button:focus-visible, input:focus-visible {
   background: rgba(248, 252, 248, .9);
 }
 
-:root[data-theme="light"] .world-map-section,
-:root[data-theme="light"] .world-map {
+:root[data-theme="light"] .world-map-section {
   background: #f8fcf8;
-}
-
-:root[data-theme="light"] .map-viewport img {
-  opacity: .58;
-  filter: none;
 }
 
 :root[data-theme="light"] .map-time-popup {
@@ -1406,7 +1356,6 @@ button:focus-visible, input:focus-visible {
 :root[data-ui-style="classic"] .toolbar-actions,
 :root[data-ui-style="classic"] .clock-card,
 :root[data-ui-style="classic"] .world-map-section,
-:root[data-ui-style="classic"] .world-map,
 :root[data-ui-style="classic"] .settings-panel,
 :root[data-ui-style="classic"] .search-dialog,
 :root[data-ui-style="classic"] .context-menu,
@@ -1489,22 +1438,52 @@ button:focus-visible, input:focus-visible {
   box-shadow: 0 16px 38px rgba(40, 73, 110, .16);
 }
 
-/* Coke is an employee-facing UI style layered over light/dark mode. */
+/* Coke is a rounded presentation-style UI layered over light/dark mode. */
 :root[data-ui-style="coke"] {
   color-scheme: dark;
-  --terminal-bg: #160001;
-  --terminal-panel: #260304;
-  --terminal-green: #f40009;
-  --terminal-dim: #e5a4a6;
-  --terminal-border: #7d191d;
+  --terminal-bg: #8f0004;
+  --terminal-panel: #b40006;
+  --terminal-green: #ffffff;
+  --terminal-dim: #ffd1d3;
+  --terminal-border: rgba(255, 255, 255, .24);
 }
 
 :root[data-ui-style="coke"] body {
-  color: #fffafa;
-  background-color: var(--terminal-bg);
+  color: #ffffff;
+  background-color: #a90005;
   background-image:
-    radial-gradient(circle at 12% 10%, rgba(244, 0, 9, .2), transparent 34%),
-    linear-gradient(145deg, #160001 0%, #2b0305 55%, #100001 100%);
+    radial-gradient(circle at 84% 16%, rgba(255, 255, 255, .2) 0 3px, transparent 4px),
+    radial-gradient(circle at 76% 28%, rgba(255, 255, 255, .12) 0 8px, transparent 9px),
+    radial-gradient(circle at 91% 40%, rgba(255, 255, 255, .1) 0 14px, transparent 15px),
+    radial-gradient(ellipse at 105% 100%, rgba(77, 0, 2, .78), transparent 48%),
+    linear-gradient(145deg, #940004 0%, #ed0008 54%, #a30005 100%);
+}
+
+:root[data-ui-style="coke"] .boot-screen {
+  color: #ffffff;
+  background:
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, .16), transparent 20%),
+    linear-gradient(145deg, #980004, #ed0008 60%, #8e0004);
+  font-family: var(--app-font);
+}
+
+:root[data-ui-style="coke"] .boot-panel {
+  padding: 1.5rem;
+  background: rgba(105, 0, 4, .34);
+  border: 1px solid rgba(255, 255, 255, .25);
+  border-radius: 28px;
+  box-shadow: 0 24px 60px rgba(67, 0, 2, .32);
+  backdrop-filter: blur(18px);
+}
+
+:root[data-ui-style="coke"] .boot-panel strong::before,
+:root[data-ui-style="coke"] .settings-heading strong::before,
+:root[data-ui-style="coke"] .search-dialog label::before,
+:root[data-ui-style="coke"] .clock-card h2::before,
+:root[data-ui-style="coke"] .meta::before,
+:root[data-ui-style="coke"] .time-value::after,
+:root[data-ui-style="coke"] .status::before {
+  content: none;
 }
 
 :root[data-ui-style="coke"] .toolbar-actions,
@@ -1513,40 +1492,106 @@ button:focus-visible, input:focus-visible {
 :root[data-ui-style="coke"] .context-menu,
 :root[data-ui-style="coke"] .world-map-section,
 :root[data-ui-style="coke"] .map-time-popup {
-  color: #fffafa;
-  background: rgba(38, 3, 4, .96);
-  border-color: var(--terminal-border);
-  box-shadow: 0 14px 34px rgba(90, 0, 4, .32);
+  color: #ffffff;
+  font-family: var(--app-font);
+  background: rgba(116, 0, 4, .68);
+  border: 1px solid rgba(255, 255, 255, .24);
+  border-radius: 28px;
+  box-shadow: 0 20px 50px rgba(77, 0, 3, .28);
+  backdrop-filter: blur(18px) saturate(1.25);
+}
+
+:root[data-ui-style="coke"] .toolbar-actions {
+  padding: .55rem;
+  border-radius: 999px;
+}
+
+:root[data-ui-style="coke"] button,
+:root[data-ui-style="coke"] input,
+:root[data-ui-style="coke"] select,
+:root[data-ui-style="coke"] .settings-group,
+:root[data-ui-style="coke"] .segmented-control label,
+:root[data-ui-style="coke"] .leaflet-map-shell {
+  border-radius: 18px;
+}
+
+:root[data-ui-style="coke"] button {
+  font-family: var(--app-font);
+  font-weight: 700;
+}
+
+:root[data-ui-style="coke"] .menu-button,
+:root[data-ui-style="coke"] .fullscreen-button,
+:root[data-ui-style="coke"] .theme-button,
+:root[data-ui-style="coke"] .map-settings-trigger {
+  border-radius: 50%;
+}
+
+:root[data-ui-style="coke"] .clock-card {
+  border-radius: 28px;
 }
 
 :root[data-ui-style="coke"] .clock-card:not(.is-local) {
-  color: #fffafa;
-  background: rgba(43, 3, 5, .96);
-  border-color: var(--terminal-border);
-  box-shadow: 5px 5px 0 rgba(104, 0, 5, .5);
+  color: #ffffff;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, .17), rgba(91, 0, 3, .35)),
+    rgba(142, 0, 5, .76);
+  border: 1px solid rgba(255, 255, 255, .25);
+  box-shadow: 0 22px 45px rgba(75, 0, 3, .27);
+  backdrop-filter: blur(14px);
+}
+
+:root[data-ui-style="coke"] .clock-card h2 {
+  font-size: calc(1.2rem * var(--card-scale, 1));
+  font-weight: 800;
+  letter-spacing: -.025em;
+}
+
+:root[data-ui-style="coke"] .time-value {
+  font-family: var(--app-font);
+  font-weight: 800;
+  letter-spacing: -.045em;
 }
 
 :root[data-ui-style="coke"] .local-badge {
+  color: #a40005;
+  background: #ffffff;
+  border: 0;
+  border-radius: 999px;
+  box-shadow: 0 8px 20px rgba(75, 0, 3, .2);
+}
+
+:root[data-ui-style="coke"] .settings-group > legend {
   color: #ffffff;
-  background: #d90008;
-  border-color: #ffffff;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+:root[data-ui-style="coke"] .add-card button {
+  color: #b00006;
+  background: #ffffff;
+  border: 0;
+  border-radius: 24px;
+  box-shadow: 0 18px 38px rgba(75, 0, 3, .24);
 }
 
 :root[data-ui-style="coke"][data-theme="light"] {
   color-scheme: light;
-  --terminal-bg: #fff4f4;
+  --terminal-bg: #fff2f2;
   --terminal-panel: #ffffff;
-  --terminal-green: #d50008;
-  --terminal-dim: #88484b;
-  --terminal-border: #e5a0a3;
+  --terminal-green: #d60008;
+  --terminal-dim: #93494c;
+  --terminal-border: rgba(183, 0, 7, .18);
 }
 
 :root[data-ui-style="coke"][data-theme="light"] body {
-  color: #4b090c;
+  color: #760004;
   background-color: #fff4f4;
   background-image:
-    radial-gradient(circle at 12% 10%, rgba(213, 0, 8, .1), transparent 34%),
-    linear-gradient(145deg, #ffffff 0%, #fff1f1 62%, #ffe4e5 100%);
+    radial-gradient(circle at 86% 14%, rgba(214, 0, 8, .13) 0 4px, transparent 5px),
+    radial-gradient(circle at 76% 28%, rgba(214, 0, 8, .08) 0 11px, transparent 12px),
+    radial-gradient(ellipse at 105% 100%, rgba(214, 0, 8, .14), transparent 48%),
+    linear-gradient(145deg, #ffffff 0%, #fff1f1 60%, #ffdfe0 100%);
 }
 
 :root[data-ui-style="coke"][data-theme="light"] .toolbar-actions,
@@ -1556,8 +1601,14 @@ button:focus-visible, input:focus-visible {
 :root[data-ui-style="coke"][data-theme="light"] .world-map-section,
 :root[data-ui-style="coke"][data-theme="light"] .map-time-popup,
 :root[data-ui-style="coke"][data-theme="light"] .clock-card:not(.is-local) {
-  color: #4b090c;
-  background: rgba(255, 255, 255, .97);
-  border-color: var(--terminal-border);
-  box-shadow: 0 14px 32px rgba(132, 14, 20, .14);
+  color: #760004;
+  background: rgba(255, 255, 255, .86);
+  border-color: rgba(183, 0, 7, .16);
+  box-shadow: 0 20px 45px rgba(132, 14, 20, .14);
+  backdrop-filter: blur(18px);
+}
+
+:root[data-ui-style="coke"][data-theme="light"] .add-card button {
+  color: #ffffff;
+  background: #d60008;
 }

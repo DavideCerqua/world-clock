@@ -24,14 +24,26 @@ Open global settings with the settings button. Available preferences include:
 
 - language (English, Italian, or Spanish);
 - font family;
+- dashboard background using the theme default, a solid color, a configurable
+  gradient, an image URL, or a local image upload;
 - number of cards per row;
 - placement or visibility of the add-clock card;
 - terminal, classic, or Coke interface style;
 - light or dark mode for every interface style; and
+- adjustable city-card corner roundness, from sharp to fully rounded;
 - map visibility.
 
 The theme can also be switched directly from the toolbar. Preferences and clock
 cards are saved automatically in browser storage.
+
+The Coke style uses a rounded presentation layout with red gradients, glass-like
+panels, white display typography, and pill controls. It remains available in both
+light and dark modes.
+
+Local PNG, JPG/JPEG, and SVG background images are stored in the current browser
+and must be smaller than 1.5 MB. Image URLs remain external and require network
+access. Use **Reset background** to return to the background supplied by the
+active UI style and light/dark theme.
 
 ## Use the daylight map
 

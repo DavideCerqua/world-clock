@@ -11,6 +11,14 @@ export const DEFAULT_MAP_COLORS = {
   cardHighlight: "#39a9ff",
   locationPin: "#58ff9f",
 } as const;
+export const DEFAULT_DASHBOARD_BACKGROUND = {
+  mode: "theme" as const,
+  color: "#050807",
+  gradientStart: "#050807",
+  gradientEnd: "#173d29",
+  gradientAngle: 135,
+  image: "",
+};
 
 export const LANGUAGES: ReadonlyArray<{ value: Language; label: string }> = [
   { value: "en", label: "English" },

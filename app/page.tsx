@@ -13,6 +13,7 @@ import { defaultClocks, formatClock, getSupportedTimezones, makeClock, timezoneL
 import {
   CLOCKS_STORAGE_KEY,
   DEFAULT_COLUMNS,
+  DEFAULT_DASHBOARD_BACKGROUND,
   DEFAULT_FONT,
   DEFAULT_LANGUAGE,
   DEFAULT_LOCATIONS,
@@ -28,6 +29,7 @@ import type {
   AddCardPlacement,
   ClockEntry,
   ClockParts,
+  DashboardBackgroundMode,
   DefaultMapLocation,
   LocationResult,
   Language,
@@ -66,6 +68,15 @@ export default function HomePage() {
   const [isAddCardHidden, setIsAddCardHidden] = useState(false);
   const [uiStyle, setUiStyle] = useState<UiStyle>("terminal");
   const [theme, setTheme] = useState<Theme>("dark");
+  const [cardCornerRadius, setCardCornerRadius] = useState<number | null>(null);
+  const [dashboardBackground, setDashboardBackground] = useState<{
+    mode: DashboardBackgroundMode;
+    color: string;
+    gradientStart: string;
+    gradientEnd: string;
+    gradientAngle: number;
+    image: string;
+  }>(DEFAULT_DASHBOARD_BACKGROUND);
   const [selectedMapLocation, setSelectedMapLocation] = useState<SelectedMapLocation | null>(null);
   const [defaultMapLocation, setDefaultMapLocation] = useState<DefaultMapLocation>(DEFAULT_MAP_LOCATION);
   const [defaultMapZoom, setDefaultMapZoom] = useState(DEFAULT_MAP_ZOOM);
@@ -123,6 +134,31 @@ export default function HomePage() {
         }
         if (settings.theme === "dark" || settings.theme === "light") {
           setTheme(settings.theme);
+        }
+        if (Number.isFinite(settings.cardCornerRadius)) {
+          setCardCornerRadius(Math.min(48, Math.max(0, settings.cardCornerRadius)));
+        }
+        const savedBackground = settings.dashboardBackground;
+        if (
+          savedBackground &&
+          ["theme", "color", "gradient", "image"].includes(savedBackground.mode)
+        ) {
+          setDashboardBackground({
+            mode: savedBackground.mode as DashboardBackgroundMode,
+            color: /^#[\da-f]{6}$/i.test(savedBackground.color)
+              ? savedBackground.color
+              : DEFAULT_DASHBOARD_BACKGROUND.color,
+            gradientStart: /^#[\da-f]{6}$/i.test(savedBackground.gradientStart)
+              ? savedBackground.gradientStart
+              : DEFAULT_DASHBOARD_BACKGROUND.gradientStart,
+            gradientEnd: /^#[\da-f]{6}$/i.test(savedBackground.gradientEnd)
+              ? savedBackground.gradientEnd
+              : DEFAULT_DASHBOARD_BACKGROUND.gradientEnd,
+            gradientAngle: Number.isFinite(savedBackground.gradientAngle)
+              ? Math.min(360, Math.max(0, savedBackground.gradientAngle))
+              : DEFAULT_DASHBOARD_BACKGROUND.gradientAngle,
+            image: typeof savedBackground.image === "string" ? savedBackground.image : "",
+          });
         }
         if (settings.language === "en" || settings.language === "it" || settings.language === "es") {
           setLanguage(settings.language);
@@ -224,6 +260,8 @@ export default function HomePage() {
         isAddCardHidden,
         uiStyle,
         theme,
+        cardCornerRadius,
+        dashboardBackground,
         defaultMapLocation,
         defaultMapZoom,
         cityPinColor,
@@ -242,6 +280,8 @@ export default function HomePage() {
     isAddCardHidden,
     uiStyle,
     theme,
+    cardCornerRadius,
+    dashboardBackground,
     defaultMapLocation,
     defaultMapZoom,
     cityPinColor,
@@ -257,6 +297,32 @@ export default function HomePage() {
     document.documentElement.dataset.theme = theme;
     document.documentElement.lang = language;
   }, [uiStyle, theme, language]);
+
+  useEffect(() => {
+    const style = document.body.style;
+    if (dashboardBackground.mode === "theme") {
+      style.removeProperty("background-color");
+      style.removeProperty("background-image");
+      style.removeProperty("background-size");
+      style.removeProperty("background-position");
+      style.removeProperty("background-repeat");
+      style.removeProperty("background-attachment");
+      return;
+    }
+
+    style.backgroundColor = dashboardBackground.mode === "gradient"
+      ? dashboardBackground.gradientStart
+      : dashboardBackground.color;
+    style.backgroundImage = dashboardBackground.mode === "gradient"
+      ? `linear-gradient(${dashboardBackground.gradientAngle}deg, ${dashboardBackground.gradientStart}, ${dashboardBackground.gradientEnd})`
+      : dashboardBackground.mode === "image" && dashboardBackground.image.trim()
+        ? `url(${JSON.stringify(dashboardBackground.image.trim())})`
+        : "none";
+    style.backgroundSize = dashboardBackground.mode === "image" ? "cover" : "auto";
+    style.backgroundPosition = "center";
+    style.backgroundRepeat = "no-repeat";
+    style.backgroundAttachment = "fixed";
+  }, [dashboardBackground]);
 
   useEffect(() => {
     const link = document.createElement("link");
@@ -808,6 +874,135 @@ export default function HomePage() {
               </p>
             </fieldset>
 
+            <fieldset className="settings-group background-settings">
+              <legend>{t("dashboardBackground")}</legend>
+              <label htmlFor="background-mode">{t("backgroundMode")}</label>
+              <select
+                id="background-mode"
+                value={dashboardBackground.mode}
+                onChange={(event) => {
+                  const mode = event.currentTarget.value as DashboardBackgroundMode;
+                  setDashboardBackground((current) => ({ ...current, mode }));
+                }}
+              >
+                <option value="theme">{t("themeDefault")}</option>
+                <option value="color">{t("solidColor")}</option>
+                <option value="gradient">{t("gradient")}</option>
+                <option value="image">{t("image")}</option>
+              </select>
+
+              {dashboardBackground.mode === "color" && (
+                <label className="background-color-row">
+                  <span>{t("backgroundColor")}</span>
+                  <input
+                    type="color"
+                    value={dashboardBackground.color}
+                    onChange={(event) => {
+                      const color = event.currentTarget.value;
+                      setDashboardBackground((current) => ({ ...current, color }));
+                    }}
+                  />
+                </label>
+              )}
+
+              {dashboardBackground.mode === "gradient" && (
+                <div className="background-gradient-controls">
+                  <label>
+                    <span>{t("gradientStart")}</span>
+                    <input
+                      type="color"
+                      value={dashboardBackground.gradientStart}
+                      onChange={(event) => {
+                        const gradientStart = event.currentTarget.value;
+                        setDashboardBackground((current) => ({ ...current, gradientStart }));
+                      }}
+                    />
+                  </label>
+                  <label>
+                    <span>{t("gradientEnd")}</span>
+                    <input
+                      type="color"
+                      value={dashboardBackground.gradientEnd}
+                      onChange={(event) => {
+                        const gradientEnd = event.currentTarget.value;
+                        setDashboardBackground((current) => ({ ...current, gradientEnd }));
+                      }}
+                    />
+                  </label>
+                  <label className="background-angle-row">
+                    <span>{t("gradientAngle")}</span>
+                    <input
+                      type="range"
+                      min="0"
+                      max="360"
+                      value={dashboardBackground.gradientAngle}
+                      onChange={(event) => {
+                        const gradientAngle = event.currentTarget.valueAsNumber;
+                        setDashboardBackground((current) => ({ ...current, gradientAngle }));
+                      }}
+                    />
+                    <output>{dashboardBackground.gradientAngle}°</output>
+                  </label>
+                </div>
+              )}
+
+              {dashboardBackground.mode === "image" && (
+                <div className="background-image-controls">
+                  <label htmlFor="background-image-url">{t("imageUrl")}</label>
+                  <input
+                    id="background-image-url"
+                    type="url"
+                    value={dashboardBackground.image.startsWith("data:") ? "" : dashboardBackground.image}
+                    placeholder="https://example.com/background.jpg"
+                    onChange={(event) => {
+                      const image = event.currentTarget.value;
+                      setDashboardBackground((current) => ({ ...current, image }));
+                    }}
+                  />
+                  <label htmlFor="background-image-file">{t("uploadImage")}</label>
+                  <input
+                    id="background-image-file"
+                    type="file"
+                    accept=".png,.jpg,.jpeg,.svg,image/png,image/jpeg,image/svg+xml"
+                    onChange={(event) => {
+                      const file = event.currentTarget.files?.[0];
+                      if (!file) return;
+                      const extension = file.name.split(".").at(-1)?.toLowerCase();
+                      const supportedType =
+                        ["image/png", "image/jpeg", "image/svg+xml"].includes(file.type) ||
+                        ["png", "jpg", "jpeg", "svg"].includes(extension ?? "");
+                      if (!supportedType) {
+                        setStatus(t("unsupportedImageType"));
+                        event.currentTarget.value = "";
+                        return;
+                      }
+                      if (file.size > 1_500_000) {
+                        setStatus(t("imageTooLarge"));
+                        event.currentTarget.value = "";
+                        return;
+                      }
+                      const reader = new FileReader();
+                      reader.addEventListener("load", () => {
+                        if (typeof reader.result !== "string") return;
+                        setDashboardBackground((current) => ({ ...current, image: reader.result as string }));
+                      });
+                      reader.addEventListener("error", () => setStatus(t("imageReadError")));
+                      reader.readAsDataURL(file);
+                    }}
+                  />
+                  {dashboardBackground.image.startsWith("data:") && <small>{t("localImageSelected")}</small>}
+                </div>
+              )}
+
+              <button
+                type="button"
+                className="background-reset"
+                onClick={() => setDashboardBackground(DEFAULT_DASHBOARD_BACKGROUND)}
+              >
+                {t("resetBackground")}
+              </button>
+            </fieldset>
+
             <fieldset className="settings-group">
               <legend>{t("layout")}</legend>
               <div className="layout-settings">
@@ -919,6 +1114,26 @@ export default function HomePage() {
                   {t("light")}
                 </label>
               </div>
+              <div className="card-shape-setting">
+                <label htmlFor="card-corner-radius">{t("cardCorners")}</label>
+                <input
+                  id="card-corner-radius"
+                  type="range"
+                  min="0"
+                  max="48"
+                  step="1"
+                  value={cardCornerRadius ?? (uiStyle === "coke" ? 28 : uiStyle === "classic" ? 12 : 2)}
+                  onChange={(event) => setCardCornerRadius(event.currentTarget.valueAsNumber)}
+                />
+                <output htmlFor="card-corner-radius">
+                  {cardCornerRadius === null
+                    ? t("styleDefault")
+                    : `${cardCornerRadius}px`}
+                </output>
+                <button type="button" onClick={() => setCardCornerRadius(null)}>
+                  {t("useStyleDefault")}
+                </button>
+              </div>
             </fieldset>
             {isPresentationMode && (
               <button className="exit-presentation" type="button" onClick={exitPresentationMode}>
@@ -939,11 +1154,17 @@ export default function HomePage() {
             const isLocal = clock.isLocal ?? clock.timezone === userTimeZone;
             const effectiveTextColor = isLocal
               ? localClockTextColor
-              : clock.textColor ?? (theme === "light" ? "#17251d" : "#e6f0ff");
+              : clock.textColor ?? (
+                uiStyle === "coke"
+                  ? (theme === "light" ? "#8f0005" : "#ffffff")
+                  : (theme === "light" ? "#17251d" : "#e6f0ff")
+              );
             const effectiveMetaColor = clock.metaColor ??
               (isLocal
                 ? (uiStyle === "coke" ? (theme === "light" ? "#a33a3a" : "#ffd0d0") : LOCAL_COLORS.meta)
-                : (theme === "light" ? "#51685a" : "#9fb2d1"));
+                : uiStyle === "coke"
+                  ? (theme === "light" ? "#9b4448" : "#ffd3d5")
+                  : (theme === "light" ? "#51685a" : "#9fb2d1"));
             const cardStyle = {
               ...(isLocal
                 ? {
@@ -956,6 +1177,7 @@ export default function HomePage() {
               "--clock-text": effectiveTextColor,
               "--clock-meta": effectiveMetaColor,
               "--card-scale": clock.scale ?? 1,
+              ...(cardCornerRadius !== null ? { borderRadius: `${cardCornerRadius}px` } : {}),
             } as CSSProperties;
 
             return (
@@ -1383,28 +1605,6 @@ export default function HomePage() {
       )}
 
       {status && <p key={status} className="status" role="status">{status}</p>}
-
-      <footer className="page-footer">
-        <a href="https://time.now/" target="_blank" rel="noopener noreferrer">
-          Time.Now
-        </a>
-        <span aria-hidden="true"> · </span>
-        <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">
-          Location search by Open-Meteo
-        </a>
-        <span aria-hidden="true"> · </span>
-        <a href="https://leafletjs.com/" target="_blank" rel="noopener noreferrer">
-          Interactive map by Leaflet
-        </a>
-        <span aria-hidden="true"> · </span>
-        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">
-          OpenStreetMap contributors
-        </a>
-        <span aria-hidden="true"> · </span>
-        <a href="https://timeapi.io/" target="_blank" rel="noopener noreferrer">
-          Coordinate timezone resolution by TimeAPI
-        </a>
-      </footer>
 
       {isSearchOpen && (
         <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label={t("addClockDialog")} onClick={() => setIsSearchOpen(false)}>

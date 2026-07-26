@@ -50,21 +50,6 @@ export type MapLocationResult = DefaultMapLocation & { id: number };
 
 export type Theme = "dark" | "light";
 export type UiStyle = "terminal" | "classic" | "coke";
+export type DashboardBackgroundMode = "theme" | "color" | "gradient" | "image";
 export type AddCardPlacement = "inline" | "next-row";
 export type Language = "en" | "it" | "es";
-
-export type DashboardSettings = {
-  fontFamily: string;
-  cardsPerRow: number;
-  addCardPlacement: AddCardPlacement;
-  isAddCardHidden: boolean;
-  uiStyle: UiStyle;
-  theme: Theme;
-  defaultMapLocation: DefaultMapLocation;
-  defaultMapZoom: number;
-  cityPinColor: string;
-  cardHighlightColor: string;
-  locationPinColor: string;
-  language: Language;
-  isMapVisible: boolean;
-};
