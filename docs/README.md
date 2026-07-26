@@ -7,8 +7,9 @@ This directory contains the extended documentation for World Clock Dashboard.
 - [User guide](user-guide.md) — add, arrange, and customize clocks; use the map and presentation mode.
 - [Architecture](architecture.md) — application structure, state, persistence, and external-service data flow.
 - [Development and deployment](development.md) — local setup, validation, production builds, and operational notes.
+- [Functional Design Document](functional-design-document.md) — scope, requirements, workflows, data, and acceptance criteria.
+- [Training materials](training-materials.md) — user, operator, presenter, and contributor learning modules.
 
 For a short project overview, see the repository [README](../README.md). Contributors
 should also read [CONTRIBUTING.md](../CONTRIBUTING.md), and security reports should
 follow [SECURITY.md](../SECURITY.md).
-

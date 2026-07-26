@@ -41,7 +41,10 @@ Useful manual checks include:
 - searching in each supported language;
 - selecting a map point and checking primary/fallback error handling;
 - changing the map default and zoom;
-- switching themes and UI styles; and
+- changing map colors and testing persistent city-pin selection;
+- switching themes and UI styles;
+- applying solid, gradient, URL, and uploaded-image backgrounds;
+- adjusting and resetting card corners; and
 - entering and leaving presentation mode.
 
 ## Production

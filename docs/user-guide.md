@@ -29,9 +29,9 @@ Open global settings with the settings button. Available preferences include:
 - number of cards per row;
 - placement or visibility of the add-clock card;
 - terminal, classic, or Coke interface style;
-- light or dark mode for every interface style; and
+- light or dark mode for every interface style;
 - adjustable city-card corner roundness, from sharp to fully rounded;
-- map visibility.
+- and map visibility.
 
 The theme can also be switched directly from the toolbar. Preferences and clock
 cards are saved automatically in browser storage.

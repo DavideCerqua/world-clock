@@ -11,9 +11,11 @@ A customizable world clock dashboard built with Next.js, React, TypeScript, and 
 
 - Search for cities and countries worldwide.
 - Reorder clock cards with drag and drop.
-- Customize card colors, typography, theme, UI style, and grid layout.
+- Customize card colors, corner shapes, typography, theme, UI style, background,
+  map colors, and grid layout.
 - Save clocks and preferences locally between browser sessions.
 - Use an interactive map to inspect the local time at any location.
+- Select city pins to locate and highlight their matching clock cards.
 - Configure the map's default city and zoom level.
 - Run a distraction-free fullscreen presentation mode.
 - Update clocks locally every second without polling a time service.
@@ -68,6 +70,8 @@ Extended documentation is available in [`docs/`](docs/README.md):
 - [User guide](docs/user-guide.md)
 - [Architecture](docs/architecture.md)
 - [Development and deployment](docs/development.md)
+- [Functional Design Document](docs/functional-design-document.md)
+- [Training materials](docs/training-materials.md)
 
 ## Data and privacy
 
