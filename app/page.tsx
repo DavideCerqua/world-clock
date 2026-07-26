@@ -8,6 +8,7 @@ import {
   type CSSProperties,
 } from "react";
 import LeafletWorldMap from "./LeafletWorldMap";
+import { useDashboardSync } from "./hooks/useDashboardSync";
 import { useLiveGeolocation } from "./hooks/useLiveGeolocation";
 import { useNow } from "./hooks/useNow";
 import { defaultClocks, formatClock, getSupportedTimezones, makeClock, timezoneLabel } from "./lib/clock";
@@ -45,6 +46,9 @@ import { resolveLocationTime, searchPlaces } from "./lib/services";
 function isLiveOrPinnedLocation(clock: Pick<ClockEntry, "id" | "isLocal">) {
   return clock.id === "user-location" || clock.isLocal === true;
 }
+
+const IS_ACCOUNT_FEATURE_ENABLED =
+  process.env.NEXT_PUBLIC_ACCOUNT_FEATURE_ENABLED === "true";
 
 export default function HomePage() {
   const [clocks, setClocks] = useState<ClockEntry[]>(defaultClocks);
@@ -112,6 +116,52 @@ export default function HomePage() {
     () => new Map(timezoneOptions.map(({ timezone, label }) => [timezone, label])),
     [timezoneOptions],
   );
+  const dashboardSettings = useMemo(() => ({
+    fontFamily: fontFamily.trim() || DEFAULT_FONT,
+    cardsPerRow,
+    addCardPlacement,
+    isAddCardHidden,
+    uiStyle,
+    theme,
+    cardCornerRadius,
+    dashboardBackground,
+    defaultMapLocation,
+    defaultMapZoom,
+    cityPinColor,
+    cardHighlightColor,
+    locationPinColor,
+    language,
+    isMapVisible,
+    isGeolocationEnabled,
+  }), [
+    fontFamily,
+    cardsPerRow,
+    addCardPlacement,
+    isAddCardHidden,
+    uiStyle,
+    theme,
+    cardCornerRadius,
+    dashboardBackground,
+    defaultMapLocation,
+    defaultMapZoom,
+    cityPinColor,
+    cardHighlightColor,
+    locationPinColor,
+    language,
+    isMapVisible,
+    isGeolocationEnabled,
+  ]);
+  const {
+    configured: isCloudConfigured,
+    signIn,
+    signOut,
+    syncState,
+    user,
+  } = useDashboardSync({
+    clocks,
+    isReady: isRestored,
+    settings: dashboardSettings,
+  });
 
   useLiveGeolocation({
     enabled: isGeolocationEnabled,
@@ -303,22 +353,8 @@ export default function HomePage() {
     const family = fontFamily.trim() || DEFAULT_FONT;
     try {
       localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify({
+        ...dashboardSettings,
         fontFamily: family,
-        cardsPerRow,
-        addCardPlacement,
-        isAddCardHidden,
-        uiStyle,
-        theme,
-        cardCornerRadius,
-        dashboardBackground,
-        defaultMapLocation,
-        defaultMapZoom,
-        cityPinColor,
-        cardHighlightColor,
-        locationPinColor,
-        language,
-        isMapVisible,
-        isGeolocationEnabled,
       }));
     } catch {
       setStatus(t("savePreferenceError"));
@@ -341,6 +377,7 @@ export default function HomePage() {
     isMapVisible,
     isGeolocationEnabled,
     isRestored,
+    dashboardSettings,
   ]);
 
   useEffect(() => {
@@ -877,8 +914,8 @@ export default function HomePage() {
               </div>
               <button type="button" aria-label={t("closeGlobalSettings")} onClick={() => setIsSettingsOpen(false)}>×</button>
             </div>
-            <fieldset className="settings-group">
-              <legend>{t("language")}</legend>
+            <details className="settings-group">
+              <summary>{t("language")}</summary>
               <label htmlFor="dashboard-language">{t("dashboardLanguage")}</label>
               <select
                 id="dashboard-language"
@@ -889,9 +926,9 @@ export default function HomePage() {
                   <option key={option.value} value={option.value}>{option.label}</option>
                 ))}
               </select>
-            </fieldset>
-            <fieldset className="settings-group">
-              <legend>{t("typography")}</legend>
+            </details>
+            <details className="settings-group">
+              <summary>{t("typography")}</summary>
               <label htmlFor="font-family">{t("googleFont")}</label>
               <div className="font-controls">
                 <input
@@ -932,10 +969,10 @@ export default function HomePage() {
               <p className="setting-help">
                 {t("fontHelp")} <strong>{fontFamily}</strong>
               </p>
-            </fieldset>
+            </details>
 
-            <fieldset className="settings-group background-settings">
-              <legend>{t("dashboardBackground")}</legend>
+            <details className="settings-group background-settings">
+              <summary>{t("dashboardBackground")}</summary>
               <label htmlFor="background-mode">{t("backgroundMode")}</label>
               <select
                 id="background-mode"
@@ -1061,10 +1098,10 @@ export default function HomePage() {
               >
                 {t("resetBackground")}
               </button>
-            </fieldset>
+            </details>
 
-            <fieldset className="settings-group">
-              <legend>{t("layout")}</legend>
+            <details className="settings-group">
+              <summary>{t("layout")}</summary>
               <div className="layout-settings">
                 <label htmlFor="cards-per-row">{t("cardsPerRow")}</label>
                 <input
@@ -1113,10 +1150,10 @@ export default function HomePage() {
                   </small>
                 )}
               </div>
-            </fieldset>
+            </details>
 
-            <fieldset className="settings-group">
-              <legend>{t("map")}</legend>
+            <details className="settings-group">
+              <summary>{t("map")}</summary>
               <label className="visibility-toggle" htmlFor="default-map-visibility">
                 <span>{t("mapVisibleByDefault")}</span>
                 <span className="toggle-control">
@@ -1142,10 +1179,10 @@ export default function HomePage() {
                 </span>
               </label>
               <small className="setting-help">{t("askLocationHelp")}</small>
-            </fieldset>
+            </details>
 
-            <fieldset className="settings-group appearance-settings">
-              <legend>{t("appearance")}</legend>
+            <details className="settings-group appearance-settings">
+              <summary>{t("appearance")}</summary>
               <span>{t("uiStyle")}</span>
               <div className="segmented-control">
                 <label>
@@ -1207,9 +1244,75 @@ export default function HomePage() {
                   {t("useStyleDefault")}
                 </button>
               </div>
-            </fieldset>
-            <fieldset className="settings-group support-settings">
-              <legend>{t("support")}</legend>
+            </details>
+            {IS_ACCOUNT_FEATURE_ENABLED && (
+              <details className="settings-group account-settings">
+                <summary>{t("account")}</summary>
+                {!isCloudConfigured ? (
+                  <small className="setting-help">{t("cloudNotConfigured")}</small>
+                ) : user ? (
+                  <>
+                    <div className="account-summary">
+                      {user.user_metadata.avatar_url && (
+                        <img
+                          src={String(user.user_metadata.avatar_url)}
+                          alt=""
+                          referrerPolicy="no-referrer"
+                        />
+                      )}
+                      <span>
+                        <strong>{String(user.user_metadata.full_name ?? user.user_metadata.user_name ?? t("signedIn"))}</strong>
+                        <small>{user.email}</small>
+                      </span>
+                    </div>
+                    <p className={`sync-state sync-${syncState}`} role="status">
+                      {t(
+                        syncState === "synced"
+                          ? "cloudSynced"
+                          : syncState === "error"
+                            ? "cloudSyncError"
+                            : "cloudSyncing",
+                      )}
+                    </p>
+                    <button type="button" onClick={() => void signOut()}>
+                      {t("signOut")}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <small className="setting-help">{t("accountHelp")}</small>
+                    <div className="account-actions">
+                      <button type="button" onClick={() => void signIn("google")}>
+                        <span className="provider-mark google-mark" aria-hidden="true">G</span>
+                        {t("continueGoogle")}
+                      </button>
+                      <button type="button" onClick={() => void signIn("github")}>
+                        <svg aria-hidden="true" viewBox="0 0 24 24">
+                          <path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.87c-2.78.6-3.37-1.18-3.37-1.18-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.53 2.35 1.09 2.92.83.09-.65.35-1.09.64-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02A9.56 9.56 0 0 1 12 6.82a9.5 9.5 0 0 1 2.5.34c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.86v2.76c0 .27.18.58.69.48A10 10 0 0 0 12 2Z" />
+                        </svg>
+                        {t("continueGithub")}
+                      </button>
+                      <button
+                        className="guest-login"
+                        type="button"
+                        onClick={() => {
+                          setIsSettingsOpen(false);
+                          setStatus(t("guestModeActive"));
+                        }}
+                      >
+                        <svg aria-hidden="true" viewBox="0 0 24 24">
+                          <path d="M12 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6ZM4 21a8 8 0 0 1 16 0h-2a6 6 0 0 0-12 0H4Z" />
+                        </svg>
+                        {t("continueGuest")}
+                      </button>
+                    </div>
+                    <small className="setting-help">{t("guestHelp")}</small>
+                  </>
+                )}
+              </details>
+            )}
+            <details className="settings-group support-settings">
+              <summary>{t("support")}</summary>
               <small className="setting-help">{t("reportProblemHelp")}</small>
               <div className="support-actions">
                 <a
@@ -1234,7 +1337,7 @@ export default function HomePage() {
                   <span>{t("donate")}</span>
                 </a>
               </div>
-            </fieldset>
+            </details>
             {isPresentationMode && (
               <button className="exit-presentation" type="button" onClick={exitPresentationMode}>
                 {t("exitPresentation")}

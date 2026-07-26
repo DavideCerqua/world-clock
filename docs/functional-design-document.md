@@ -38,7 +38,7 @@ application backend.
 
 ### Out of scope
 
-- user accounts, authentication, or authorization;
+- password-based accounts or application-defined credentials;
 - server-side databases or cross-device synchronization;
 - calendar events, alarms, weather, or meeting scheduling;
 - guaranteed offline map/search support;
@@ -55,8 +55,9 @@ application backend.
 | Operator | Deploy and maintain a reliable local or hosted instance |
 | Contributor | Change features while preserving expected behavior |
 
-All application users have the same capabilities. Roles describe usage patterns,
-not access-control levels.
+Anonymous and authenticated users have the same dashboard-editing capabilities.
+Authentication additionally enables access to the signed-in user's isolated cloud
+state.
 
 ## 4. Functional requirements
 
@@ -101,6 +102,22 @@ not access-control levels.
 - Reverse geocoding shall prefer locality-level names over broader city-level
   administrative names.
 
+### FR-2A: Account and synchronization
+
+- Anonymous use shall remain available without Supabase configuration.
+- The account panel shall expose an explicit guest-mode action.
+- Guest mode shall not create an authentication identity or database row.
+- Configured deployments shall offer Google and GitHub OAuth sign-in.
+- The application shall not receive or store provider passwords.
+- On first sign-in with no cloud row, the current local dashboard shall be
+  imported into the account.
+- Returning accounts shall restore their cloud dashboard into local validated
+  storage.
+- Authenticated changes shall be saved locally and synchronized after a debounce.
+- A cloud failure shall not remove or block the local dashboard.
+- Row Level Security shall restrict each dashboard row to its authenticated owner.
+- Signing out shall not delete local or synchronized data.
+
 ### FR-3: Card appearance
 
 - Users shall be able to configure background, primary text, and metadata colors
@@ -113,6 +130,9 @@ Style defaults are 2 pixels for Terminal, 12 pixels for Classic, and 28 pixels f
 Coke.
 
 ### FR-4: Dashboard appearance
+
+- Global settings categories shall be collapsed whenever the settings panel opens.
+- Users shall expand only the categories whose options they want to inspect.
 
 - The system shall provide Terminal, Classic, and Coke UI styles.
 - Every UI style shall support light and dark modes.

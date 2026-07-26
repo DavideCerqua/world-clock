@@ -13,6 +13,10 @@ interactions run in the browser.
 | `app/LeafletWorldMap.tsx` | Dynamically loaded Leaflet map, user/city markers, and daylight terminator |
 | `app/hooks/useNow.ts` | Shared current-time updates |
 | `app/hooks/useLiveGeolocation.ts` | One-shot browser geolocation and locality/timezone resolution |
+| `app/hooks/useDashboardSync.ts` | Supabase authentication state and debounced cloud synchronization |
+| `app/auth/callback/route.ts` | OAuth authorization-code exchange and safe redirect |
+| `app/lib/supabase/` | Browser and server Supabase clients |
+| `supabase/schema.sql` | Dashboard table, grants, and per-user RLS policies |
 | `app/lib/clock.ts` | Clock creation, timezone discovery, and cached date/time formatting |
 | `app/lib/services.ts` | Geocoding, coordinate-to-timezone lookup, and time synchronization |
 | `app/lib/constants.ts` | Defaults, storage keys, languages, fonts, and colors |
@@ -82,9 +86,11 @@ The application writes two JSON values to `localStorage`:
 | `wc-settings` | Font, dashboard background, layout, add-card behavior, UI style and light/dark theme, map defaults and colors, language, and map visibility |
 
 Stored data is validated and constrained during restoration. Invalid or unsupported
-timezones are omitted. There is no server-side persistence or synchronization
-between browsers. See [GDPR and geolocation](gdpr-and-geolocation.md) for the
-complete privacy analysis and publication checklist.
+timezones are omitted. When Supabase is configured and a user signs in, the same
+two documents are synchronized into that user's `dashboard_states` row. RLS binds
+all operations to the authenticated user ID. Anonymous behavior remains local-only.
+See [Authentication and synchronization](authentication-and-sync.md) and
+[GDPR and geolocation](gdpr-and-geolocation.md).
 
 ## Design constraints
 

@@ -47,9 +47,27 @@ from browser geolocation and cannot be assigned manually. Card scale is limited 
 70–150%. Border badges keep a consistent width, height, and text size across all
 cards, regardless of card scaling.
 
+## Sign in and synchronize
+
+Open global settings and find **Account**. When cloud synchronization has been
+configured by the deployment owner, select Google or GitHub and complete the
+provider's consent flow.
+
+Select **Continue as guest** to use the application without an account. Guest
+cards and settings remain only in that browser and are not synchronized.
+
+On the first login for a new account, the current browser dashboard is copied to
+the account. A returning account restores its existing cloud dashboard.
+Subsequent changes are saved locally first and synchronized automatically. If
+synchronization fails, the local copy remains available.
+
+Signing out does not delete local or cloud data. Account-data deletion must be
+requested from the deployment owner.
+
 ## Customize the dashboard
 
-Open global settings with the settings button. Available preferences include:
+Open global settings with the settings button. Categories start collapsed; select
+a category heading to reveal its options. Available preferences include:
 
 - language (English, Italian, or Spanish);
 - font family;

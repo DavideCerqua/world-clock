@@ -11,7 +11,7 @@ const contentSecurityPolicy = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' data: https://fonts.gstatic.com",
   "img-src 'self' data: blob: https:",
-  "connect-src 'self' https://api.bigdatacloud.net https://api.open-meteo.com https://geocoding-api.open-meteo.com https://timeapi.io",
+  "connect-src 'self' https://*.supabase.co https://api.bigdatacloud.net https://api.open-meteo.com https://geocoding-api.open-meteo.com https://timeapi.io",
 ].join("; ");
 
 const nextConfig: NextConfig = {

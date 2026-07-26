@@ -6,8 +6,9 @@
 - npm 10 or newer
 - A modern browser
 
-The application currently requires no environment variables. Keep `.env.example`
-up to date if that changes.
+Authentication and cloud synchronization use the optional variables documented in
+`.env.example`. Without them, the dashboard builds and works anonymously with
+local storage; the account panel explains that cloud sync is not configured.
 
 ## Local development
 
@@ -79,6 +80,9 @@ Before publishing:
   [GDPR/geolocation checklist](gdpr-and-geolocation.md); and
 - verify the CSP, geolocation prompt, map tiles, fonts, and all external API calls
   on the final production origin.
+- apply `supabase/schema.sql`, configure both OAuth providers, and test the
+  production callback as described in
+  [Authentication and synchronization](authentication-and-sync.md).
 
 ## Network requirements
 

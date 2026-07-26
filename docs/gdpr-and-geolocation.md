@@ -23,11 +23,15 @@ Location information should be treated as personal data.
 3. BigDataCloud receives them to resolve locality and country.
 4. Open-Meteo receives them only if the primary timezone lookup fails.
 5. The resulting card and map default are saved in browser `localStorage`.
+6. If the visitor signs in, that dashboard is also synchronized to the visitor's
+   RLS-protected Supabase row.
 
-This repository has no application backend, accounts, database, analytics, or
-server-side location log. The deployment host still receives normal HTTP metadata
-such as IP address. External providers receive request metadata and coordinates;
-operators must review their privacy terms, retention, processor status, and
+Anonymous users have no application account or server-side location log.
+Authenticated users have a Supabase Auth identity and a database row containing
+their complete dashboard. The deployment host and Supabase also receive normal
+HTTP metadata such as IP address. OAuth providers receive the authentication
+request, while location providers receive request metadata and coordinates.
+Operators must review provider privacy terms, retention, processor status, and
 international-transfer arrangements.
 
 ## Purpose, minimisation, and retention
@@ -37,10 +41,11 @@ its time. Repeated position samples are not retained. The live card is stored
 under `wc-clocks`; its preference and default map coordinates are stored under
 `wc-settings`.
 
-`localStorage` has no automatic expiry. Data remains until the visitor removes
-the relevant data, clears site storage, or the browser removes it. Turning off
-startup geolocation prevents future prompts but does not erase saved data.
-Visitors can revoke location permission in browser settings.
+`localStorage` has no automatic expiry. Cloud dashboard records also have no
+automatic expiry in the supplied schema. Clearing site storage removes only the
+local copy; it does not erase a signed-in user's Supabase row. Turning off startup
+geolocation prevents future prompts but does not erase saved data. Visitors can
+revoke location permission in browser settings.
 
 ## Publication responsibilities
 
@@ -52,8 +57,8 @@ Before launch, the operator should:
   browser permission alone is not a complete GDPR privacy notice;
 - offer clear instructions for deleting site data and withdrawing permission;
 - deploy through HTTPS, restrict third-party connections, and patch dependencies;
-- review TimeAPI, BigDataCloud, Open-Meteo, OpenStreetMap, Google Fonts, and host
-  privacy documentation and contracts; and
+- review Supabase, Google, GitHub, TimeAPI, BigDataCloud, Open-Meteo,
+  OpenStreetMap, Google Fonts, and host privacy documentation and contracts; and
 - assess whether the real use case needs a DPIA, especially when combined with
   employee monitoring or systematic tracking.
 
@@ -67,9 +72,9 @@ requests must follow the operator's agreements and provider policies.
 > If you enable live location, your browser asks for permission and sends your
 > coordinates directly to our timezone and reverse-geocoding providers so the
 > dashboard can show your city and local time. The resulting card and preference
-> are stored in this browser. We do not keep an application database or location
-> history. You can disable future requests, revoke browser permission, and clear
-> this site's stored data at any time.
+> are stored in this browser and, if you sign in, in your synchronized dashboard
+> account. We do not build a location history. You can disable future requests,
+> revoke browser permission, and request deletion of synchronized account data.
 
 Adapt this text to identify the actual controller, providers, lawful basis,
 retention, transfers, and contact channels of the deployed service.

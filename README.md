@@ -16,6 +16,8 @@ A customizable world clock dashboard built with Next.js, React, TypeScript, and 
 - Customize card colors, corner shapes, typography, theme, UI style, background,
   map colors, and grid layout.
 - Save clocks and preferences locally between browser sessions.
+- Optionally sign in with Google or GitHub to synchronize the dashboard through
+  a user-isolated Supabase database record.
 - Use an interactive map to inspect the local time at any location.
 - Select city pins to locate and highlight their matching clock cards.
 - Configure the map's default city and zoom level.
@@ -35,6 +37,10 @@ npm run dev
 ```
 
 Open `http://localhost:3000`.
+
+Cloud accounts are optional. Follow
+[Authentication and cloud synchronization](docs/authentication-and-sync.md) to
+configure a free Supabase project and OAuth providers.
 
 For a production build:
 
@@ -72,13 +78,19 @@ Extended documentation is available in [`docs/`](docs/README.md):
 - [User guide](docs/user-guide.md)
 - [Architecture](docs/architecture.md)
 - [Development and deployment](docs/development.md)
+- [Authentication and synchronization](docs/authentication-and-sync.md)
 - [GDPR and geolocation](docs/gdpr-and-geolocation.md)
 - [Functional Design Document](docs/functional-design-document.md)
 - [Training materials](docs/training-materials.md)
 
 ## Data and privacy
 
-Dashboard preferences are stored only in the browser's `localStorage`. City search uses Open-Meteo's geocoding service. Map tiles come from OpenStreetMap, and coordinate timezone resolution uses TimeAPI with an Open-Meteo fallback. No API credentials are required. See [GDPR and geolocation](docs/gdpr-and-geolocation.md) for the complete location-data flow and deployment responsibilities.
+Anonymous dashboard preferences are stored only in the browser's `localStorage`.
+Signed-in users also store their dashboard in a private Supabase row protected by
+Row Level Security. City search uses Open-Meteo's geocoding service. Map tiles come
+from OpenStreetMap, and coordinate timezone resolution uses TimeAPI with an
+Open-Meteo fallback. See [GDPR and geolocation](docs/gdpr-and-geolocation.md) for
+the location-data flow and deployment responsibilities.
 
 Map data is © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright) and displayed with [Leaflet](https://leafletjs.com/). Keep the on-map OpenStreetMap attribution visible when redistributing the application.
 
