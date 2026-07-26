@@ -1,19 +1,25 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CircleMarker, Map as LeafletMap, Polyline } from "leaflet";
 import { translate } from "./lib/i18n";
 import type { Language } from "./lib/types";
 
 type Coordinates = { latitude: number; longitude: number };
+type CityPin = Coordinates & { id: string; label: string };
 
 type Props = {
   now: Date | null;
   selectedLocation: Coordinates | null;
+  cityPins: CityPin[];
+  selectedCityPinId: string | null;
+  cityPinColor: string;
+  locationPinColor: string;
   defaultLocation: Coordinates;
   defaultZoom: number;
   language: Language;
   onSelect: (coordinates: Coordinates) => void;
+  onCityPinSelect: (id: string) => void;
   onReady?: () => void;
 };
 
@@ -36,17 +42,25 @@ function getTerminatorPoints(date: Date): [number, number][] {
 export default function LeafletWorldMap({
   now,
   selectedLocation,
+  cityPins,
+  selectedCityPinId,
+  cityPinColor,
+  locationPinColor,
   defaultLocation,
   defaultZoom,
   language,
   onSelect,
+  onCityPinSelect,
   onReady,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isMapReady, setIsMapReady] = useState(false);
   const mapRef = useRef<LeafletMap | null>(null);
   const markerRef = useRef<CircleMarker | null>(null);
+  const cityMarkersRef = useRef<CircleMarker[]>([]);
   const terminatorRef = useRef<Polyline | null>(null);
   const onSelectRef = useRef(onSelect);
+  const onCityPinSelectRef = useRef(onCityPinSelect);
   const onReadyRef = useRef(onReady);
   const defaultLocationRef = useRef(defaultLocation);
   const defaultZoomRef = useRef(defaultZoom);
@@ -54,6 +68,10 @@ export default function LeafletWorldMap({
   useEffect(() => {
     onSelectRef.current = onSelect;
   }, [onSelect]);
+
+  useEffect(() => {
+    onCityPinSelectRef.current = onCityPinSelect;
+  }, [onCityPinSelect]);
 
   useEffect(() => {
     onReadyRef.current = onReady;
@@ -101,12 +119,14 @@ export default function LeafletWorldMap({
         onSelectRef.current({ latitude: event.latlng.lat, longitude: event.latlng.lng });
       });
       mapRef.current = map;
+      setIsMapReady(true);
       onReadyRef.current?.();
     }
 
     void initialize();
     return () => {
       cancelled = true;
+      setIsMapReady(false);
       mapRef.current?.remove();
       mapRef.current = null;
     };
@@ -125,14 +145,47 @@ export default function LeafletWorldMap({
             radius: 5,
             color: "#050807",
             weight: 2,
-            fillColor: "#58ff9f",
+            fillColor: locationPinColor,
             fillOpacity: 1,
           }).addTo(map)
         : null;
     }
     void updateMarker();
     return () => { cancelled = true; };
-  }, [selectedLocation]);
+  }, [selectedLocation, locationPinColor]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function updateCityMarkers() {
+      const map = mapRef.current;
+      if (!map) return;
+      const L = await import("leaflet");
+      if (cancelled) return;
+
+      cityMarkersRef.current.forEach((marker) => marker.remove());
+      cityMarkersRef.current = cityPins.map((pin) => {
+        const isSelected = pin.id === selectedCityPinId;
+        const marker = L.circleMarker([pin.latitude, pin.longitude], {
+          radius: 8,
+          color: isSelected ? "#ffffff" : "#06122b",
+          weight: isSelected ? 4 : 2,
+          fillColor: cityPinColor,
+          fillOpacity: 1,
+          bubblingMouseEvents: false,
+        }).addTo(map);
+        marker.bindTooltip(pin.label, { direction: "top", offset: [0, -5] });
+        marker.on("click", () => onCityPinSelectRef.current(pin.id));
+        return marker;
+      });
+      markerRef.current?.bringToFront();
+    }
+    void updateCityMarkers();
+    return () => {
+      cancelled = true;
+      cityMarkersRef.current.forEach((marker) => marker.remove());
+      cityMarkersRef.current = [];
+    };
+  }, [cityPins, cityPinColor, isMapReady, selectedCityPinId]);
 
   useEffect(() => {
     let cancelled = false;

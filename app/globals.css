@@ -524,6 +524,20 @@ button:focus-visible, input:focus-visible {
   box-shadow: 0 6px 20px rgba(10, 138, 74, .12);
 }
 
+.clock-card.is-map-highlighted {
+  z-index: 2;
+  border-color: var(--map-highlight-color, #39a9ff);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--map-highlight-color, #39a9ff) 35%, transparent),
+    0 0 28px color-mix(in srgb, var(--map-highlight-color, #39a9ff) 75%, transparent);
+  animation: map-card-highlight 900ms ease-in-out infinite alternate;
+}
+
+@keyframes map-card-highlight {
+  from { transform: translateY(0); }
+  to { transform: translateY(-4px); }
+}
+
 .clock-card[draggable="true"] { cursor: grab; }
 .clock-card[draggable="true"]:active { cursor: grabbing; }
 
@@ -748,6 +762,42 @@ button:focus-visible, input:focus-visible {
 .map-zoom-setting input {
   width: 100%;
   accent-color: var(--terminal-green);
+}
+
+.map-color-settings {
+  display: grid;
+  gap: .55rem;
+  margin: 0 0 .8rem;
+  padding: .7rem;
+  border: 1px solid var(--terminal-border);
+}
+
+.map-color-settings legend {
+  padding: 0 .35rem;
+  color: var(--terminal-dim);
+  font-size: .78rem;
+  font-weight: 700;
+}
+
+.map-color-settings label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.map-color-settings input[type="color"] {
+  width: 3.25rem;
+  height: 2rem;
+  padding: .1rem;
+  border: 1px solid var(--terminal-border);
+  background: transparent;
+  cursor: pointer;
+}
+
+.map-color-settings button {
+  justify-self: end;
+  margin-top: .2rem;
 }
 
 .map-zoom-setting output {

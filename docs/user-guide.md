@@ -38,8 +38,15 @@ cards are saved automatically in browser storage.
 Select a point on the map to resolve its timezone and show the synchronized local
 time. The orange line represents the approximate day/night terminator.
 
+Blue pins represent cities in the clock grid, while the green pin represents the
+location selected directly by the user. Select a city pin to scroll to and highlight
+its matching clock card. The highlight remains active until another city pin or a
+free point on the map is selected.
+
 Use the map settings button to choose the default map location and zoom. Right-click
-the map area for a shortcut to hide or show it and to open its settings.
+the map area for a shortcut to hide or show it and to open its settings. Map
+settings also let you customize the city-pin, selected-location-pin, and card
+highlight colors or reset all three to their defaults.
 
 The base map and timezone lookup require network access. If the primary timezone
 resolver is unavailable, the application attempts a fallback service.
@@ -68,4 +75,3 @@ Clocks and settings remain in the browser's `localStorage`; the application has 
 account system or backend database. Searches and map actions send the necessary
 query or coordinates to the external services described in
 [Architecture](architecture.md#external-services).
-

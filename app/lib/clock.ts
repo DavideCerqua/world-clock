@@ -11,12 +11,19 @@ export function timezoneLabel(timezone: string) {
   return timezone.split("/").at(-1)?.replaceAll("_", " ") ?? timezone;
 }
 
-export function makeClock(timezone: string, id?: string, city?: string, country?: string): ClockEntry {
+export function makeClock(
+  timezone: string,
+  id?: string,
+  city?: string,
+  country?: string,
+  coordinates?: { latitude: number; longitude: number },
+): ClockEntry {
   return {
     id: id ?? globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`,
     city: city ?? timezoneLabel(timezone),
     country,
     timezone,
+    ...coordinates,
   };
 }
 
@@ -62,6 +69,6 @@ export function formatClock(date: Date, timezone: string, locale = "en"): ClockP
   };
 }
 
-export const defaultClocks = DEFAULT_LOCATIONS.map(({ timezone, city, country }) =>
-  makeClock(timezone, `default-${timezone}`, city, country),
+export const defaultClocks = DEFAULT_LOCATIONS.map(({ timezone, city, country, latitude, longitude }) =>
+  makeClock(timezone, `default-${timezone}`, city, country, { latitude, longitude }),
 );

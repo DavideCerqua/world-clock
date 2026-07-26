@@ -6,6 +6,11 @@ export const DEFAULT_FONT = "Inter";
 export const DEFAULT_COLUMNS = 4;
 export const DEFAULT_MAP_ZOOM = 3;
 export const DEFAULT_LANGUAGE: Language = "en";
+export const DEFAULT_MAP_COLORS = {
+  cityPin: "#39a9ff",
+  cardHighlight: "#39a9ff",
+  locationPin: "#58ff9f",
+} as const;
 
 export const LANGUAGES: ReadonlyArray<{ value: Language; label: string }> = [
   { value: "en", label: "English" },
@@ -40,8 +45,8 @@ export const LOCAL_COLORS = {
 } as const;
 
 export const DEFAULT_LOCATIONS = [
-  { city: "Rome", country: "Italy", timezone: "Europe/Rome" },
-  { city: "Cairo", country: "Egypt", timezone: "Africa/Cairo" },
-  { city: "Sofia", country: "Bulgaria", timezone: "Europe/Sofia" },
-  { city: "Dublin", country: "Ireland", timezone: "Europe/Dublin" },
+  { city: "Rome", country: "Italy", timezone: "Europe/Rome", latitude: 41.9028, longitude: 12.4964 },
+  { city: "Cairo", country: "Egypt", timezone: "Africa/Cairo", latitude: 30.0444, longitude: 31.2357 },
+  { city: "Sofia", country: "Bulgaria", timezone: "Europe/Sofia", latitude: 42.6977, longitude: 23.3219 },
+  { city: "Dublin", country: "Ireland", timezone: "Europe/Dublin", latitude: 53.3498, longitude: -6.2603 },
 ] as const;

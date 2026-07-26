@@ -16,6 +16,7 @@ import {
   DEFAULT_FONT,
   DEFAULT_LANGUAGE,
   DEFAULT_LOCATIONS,
+  DEFAULT_MAP_COLORS,
   DEFAULT_MAP_LOCATION,
   DEFAULT_MAP_ZOOM,
   LOCAL_COLORS,
@@ -68,9 +69,13 @@ export default function HomePage() {
   const [selectedMapLocation, setSelectedMapLocation] = useState<SelectedMapLocation | null>(null);
   const [defaultMapLocation, setDefaultMapLocation] = useState<DefaultMapLocation>(DEFAULT_MAP_LOCATION);
   const [defaultMapZoom, setDefaultMapZoom] = useState(DEFAULT_MAP_ZOOM);
+  const [cityPinColor, setCityPinColor] = useState<string>(DEFAULT_MAP_COLORS.cityPin);
+  const [cardHighlightColor, setCardHighlightColor] = useState<string>(DEFAULT_MAP_COLORS.cardHighlight);
+  const [locationPinColor, setLocationPinColor] = useState<string>(DEFAULT_MAP_COLORS.locationPin);
   const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
   const [isMapVisible, setIsMapVisible] = useState(true);
   const [draggedClockId, setDraggedClockId] = useState<string | null>(null);
+  const [highlightedClockId, setHighlightedClockId] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<{ id: string; after: boolean } | null>(null);
   const [bootProgress, setBootProgress] = useState(6);
   const [isBootVisible, setIsBootVisible] = useState(true);
@@ -136,6 +141,15 @@ export default function HomePage() {
         if (Number.isInteger(settings.defaultMapZoom)) {
           setDefaultMapZoom(Math.min(19, Math.max(2, settings.defaultMapZoom)));
         }
+        if (/^#[\da-f]{6}$/i.test(settings.cityPinColor)) {
+          setCityPinColor(settings.cityPinColor);
+        }
+        if (/^#[\da-f]{6}$/i.test(settings.cardHighlightColor)) {
+          setCardHighlightColor(settings.cardHighlightColor);
+        }
+        if (/^#[\da-f]{6}$/i.test(settings.locationPinColor)) {
+          setLocationPinColor(settings.locationPinColor);
+        }
       }
       const stored = localStorage.getItem(CLOCKS_STORAGE_KEY);
       if (stored) {
@@ -147,6 +161,7 @@ export default function HomePage() {
             )
             .map((clock: Partial<ClockEntry>) => {
               const timezone = String(clock.timezone);
+              const defaultLocation = DEFAULT_LOCATIONS.find((location) => location.timezone === timezone);
               const savedCity = clock.city || timezoneLabel(timezone);
               const savedParts = savedCity.split(", ");
               const possibleCountry = savedParts.at(-1) ?? "";
@@ -157,7 +172,7 @@ export default function HomePage() {
                   ? savedParts
                   : null;
               const migratedCountry = legacyParts?.pop();
-              const defaultCountry = DEFAULT_LOCATIONS.find((location) => location.timezone === timezone)?.country;
+              const defaultCountry = defaultLocation?.country;
               return {
                 ...makeClock(timezone, String(clock.id ?? `restored-${timezone}`)),
                 ...clock,
@@ -165,6 +180,12 @@ export default function HomePage() {
                 city: legacyParts?.join(", ") || savedCity,
                 country: clock.country || migratedCountry || defaultCountry,
                 timezone,
+                latitude: typeof clock.latitude === "number" && Number.isFinite(clock.latitude)
+                  ? clock.latitude
+                  : defaultLocation?.latitude,
+                longitude: typeof clock.longitude === "number" && Number.isFinite(clock.longitude)
+                  ? clock.longitude
+                  : defaultLocation?.longitude,
                 scale: typeof clock.scale === "number" && Number.isFinite(clock.scale)
                   ? Math.min(1.5, Math.max(.7, clock.scale))
                   : undefined,
@@ -203,6 +224,9 @@ export default function HomePage() {
         theme,
         defaultMapLocation,
         defaultMapZoom,
+        cityPinColor,
+        cardHighlightColor,
+        locationPinColor,
         language,
         isMapVisible,
       }));
@@ -218,6 +242,9 @@ export default function HomePage() {
     theme,
     defaultMapLocation,
     defaultMapZoom,
+    cityPinColor,
+    cardHighlightColor,
+    locationPinColor,
     language,
     isMapVisible,
     isRestored,
@@ -335,6 +362,22 @@ export default function HomePage() {
   }, [isAddCardHidden, isMapVisible]);
 
   const hasMultipleClockRows = Math.ceil(clocks.length / cardsPerRow) >= 2;
+  const cityPins = useMemo(
+    () => clocks.flatMap((clock) =>
+      typeof clock.latitude === "number" &&
+      Number.isFinite(clock.latitude) &&
+      typeof clock.longitude === "number" &&
+      Number.isFinite(clock.longitude)
+        ? [{
+            id: clock.id,
+            label: `${clock.city}${clock.country ? ` (${clock.country})` : ""}`,
+            latitude: clock.latitude,
+            longitude: clock.longitude,
+          }]
+        : [],
+    ),
+    [clocks],
+  );
 
   const formattedClocks = useMemo(() => {
     if (!now) return new Map<string, ClockParts>();
@@ -403,6 +446,8 @@ export default function HomePage() {
               country: place.country || undefined,
               detail: `${location}${location ? " · " : ""}${place.timezone}`,
               timezone: place.timezone as string,
+              latitude: place.latitude,
+              longitude: place.longitude,
             };
           });
         setLocationResults(results);
@@ -469,6 +514,8 @@ export default function HomePage() {
     timezone: string,
     city = timezoneLabels.get(timezone) ?? timezoneLabel(timezone),
     country?: string,
+    latitude?: number,
+    longitude?: number,
   ) {
     if (clocks.some((clock) =>
       clock.timezone === timezone &&
@@ -478,7 +525,27 @@ export default function HomePage() {
       setStatus(t("duplicateCity"));
       return;
     }
-    setClocks((current) => [...current, makeClock(timezone, undefined, city, country)]);
+    const coordinates = Number.isFinite(latitude) && Number.isFinite(longitude)
+      ? { latitude: latitude as number, longitude: longitude as number }
+      : undefined;
+    const newClock = makeClock(timezone, undefined, city, country, coordinates);
+    setClocks((current) => [...current, newClock]);
+    if (!coordinates) {
+      const controller = new AbortController();
+      void searchPlaces(city, 10, controller.signal, language)
+        .then((places) => {
+          const place = places.find((candidate) => candidate.timezone === timezone) ?? places[0];
+          if (!place) return;
+          setClocks((current) => current.map((clock) =>
+            clock.id === newClock.id
+              ? { ...clock, latitude: place.latitude, longitude: place.longitude }
+              : clock,
+          ));
+        })
+        .catch(() => {
+          // The clock remains usable when coordinates cannot be resolved.
+        });
+    }
     setStatus(t("cityAdded", { city }));
     setIsSearchOpen(false);
     setSearchQuery("");
@@ -874,10 +941,17 @@ export default function HomePage() {
               className={[
                 "clock-card",
                 isLocal ? "is-local" : "",
+                highlightedClockId === clock.id ? "is-map-highlighted" : "",
                 draggedClockId === clock.id ? "is-dragging" : "",
                 dropTarget?.id === clock.id ? (dropTarget.after ? "drop-after" : "drop-before") : "",
               ].filter(Boolean).join(" ")}
-              style={cardStyle}
+              id={`clock-${clock.id}`}
+              style={{
+                ...cardStyle,
+                ...(highlightedClockId === clock.id
+                  ? { "--map-highlight-color": cardHighlightColor }
+                  : {}),
+              } as CSSProperties}
               draggable
               onDragStart={(event) => {
                 event.dataTransfer.effectAllowed = "move";
@@ -1083,11 +1157,26 @@ export default function HomePage() {
           <LeafletWorldMap
             now={now}
             selectedLocation={selectedMapLocation}
+            cityPins={cityPins}
+            selectedCityPinId={highlightedClockId}
+            cityPinColor={cityPinColor}
+            locationPinColor={locationPinColor}
             defaultLocation={defaultMapLocation}
             defaultZoom={defaultMapZoom}
             language={language}
             onSelect={({ latitude, longitude }) => {
+              setHighlightedClockId(null);
               void selectMapLocation(latitude, longitude);
+            }}
+            onCityPinSelect={(clockId) => {
+              setHighlightedClockId(clockId);
+              setSelectedMapLocation(null);
+              window.requestAnimationFrame(() => {
+                document.getElementById(`clock-${clockId}`)?.scrollIntoView({
+                  behavior: "smooth",
+                  block: "center",
+                });
+              });
             }}
             onReady={() => {
               if (hasInitializedMapRef.current) return;
@@ -1197,6 +1286,43 @@ export default function HomePage() {
               />
               <output htmlFor="default-map-zoom">{defaultMapZoom}×</output>
             </div>
+            <fieldset className="map-color-settings">
+              <legend>{t("mapPinColors")}</legend>
+              <label>
+                <span>{t("cityPinColor")}</span>
+                <input
+                  type="color"
+                  value={cityPinColor}
+                  onChange={(event) => setCityPinColor(event.currentTarget.value)}
+                />
+              </label>
+              <label>
+                <span>{t("cardHighlightColor")}</span>
+                <input
+                  type="color"
+                  value={cardHighlightColor}
+                  onChange={(event) => setCardHighlightColor(event.currentTarget.value)}
+                />
+              </label>
+              <label>
+                <span>{t("locationPinColor")}</span>
+                <input
+                  type="color"
+                  value={locationPinColor}
+                  onChange={(event) => setLocationPinColor(event.currentTarget.value)}
+                />
+              </label>
+              <button
+                type="button"
+                onClick={() => {
+                  setCityPinColor(DEFAULT_MAP_COLORS.cityPin);
+                  setCardHighlightColor(DEFAULT_MAP_COLORS.cardHighlight);
+                  setLocationPinColor(DEFAULT_MAP_COLORS.locationPin);
+                }}
+              >
+                {t("resetMapColors")}
+              </button>
+            </fieldset>
             <div className="search-results">
               {isMapLocationLoading && <p className="search-loading">{t("searchingLocations")}</p>}
               {!isMapLocationLoading && mapLocationQuery.trim().length >= 2 && !mapLocationResults.length && (
@@ -1275,7 +1401,16 @@ export default function HomePage() {
               {isLocationSearchLoading && (
                 <p className="search-loading" role="status">{t("searchingLocations")}</p>
               )}
-              {searchResults.length ? searchResults.map(({ id, timezone, label, cardLabel, country, detail }) => {
+              {searchResults.length ? searchResults.map(({
+                id,
+                timezone,
+                label,
+                cardLabel,
+                country,
+                detail,
+                latitude,
+                longitude,
+              }) => {
                 const isAlreadyAdded = clocks.some((clock) =>
                   clock.timezone === timezone &&
                   clock.city === cardLabel &&
@@ -1289,7 +1424,7 @@ export default function HomePage() {
                       className={isAlreadyAdded ? "danger" : undefined}
                       onClick={() => {
                         if (isAlreadyAdded) removeClock(timezone, cardLabel, country);
-                        else addClock(timezone, cardLabel, country);
+                        else addClock(timezone, cardLabel, country, latitude, longitude);
                       }}
                     >
                       {t(isAlreadyAdded ? "remove" : "add")}

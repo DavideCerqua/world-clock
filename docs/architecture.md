@@ -10,7 +10,7 @@ interactions run in the browser.
 | --- | --- |
 | `app/layout.tsx` | Root HTML shell, metadata, and global styles |
 | `app/page.tsx` | Dashboard rendering, UI state, persistence, drag and drop, and dialogs |
-| `app/LeafletWorldMap.tsx` | Dynamically loaded Leaflet map, marker, and daylight terminator |
+| `app/LeafletWorldMap.tsx` | Dynamically loaded Leaflet map, user/city markers, and daylight terminator |
 | `app/hooks/useNow.ts` | Shared current-time updates |
 | `app/lib/clock.ts` | Clock creation, timezone discovery, and cached date/time formatting |
 | `app/lib/services.ts` | Geocoding, coordinate-to-timezone lookup, and time synchronization |
@@ -67,8 +67,8 @@ The application writes two JSON values to `localStorage`:
 
 | Key | Data |
 | --- | --- |
-| `wc-clocks` | Ordered clock cards, labels, timezone, colors, local marker, and scale |
-| `wc-settings` | Font, layout, add-card behavior, style, theme, map defaults, language, and map visibility |
+| `wc-clocks` | Ordered clock cards, labels, timezone, coordinates, colors, local marker, and scale |
+| `wc-settings` | Font, layout, add-card behavior, style, theme, map defaults and colors, language, and map visibility |
 
 Stored data is validated and constrained during restoration. Invalid or unsupported
 timezones are omitted. There is no server-side persistence or synchronization

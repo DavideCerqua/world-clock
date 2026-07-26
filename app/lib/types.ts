@@ -3,6 +3,8 @@ export type ClockEntry = {
   city: string;
   country?: string;
   timezone: string;
+  latitude?: number;
+  longitude?: number;
   bgColor?: string;
   textColor?: string;
   metaColor?: string;
@@ -23,6 +25,8 @@ export type LocationResult = {
   country?: string;
   detail: string;
   timezone: string;
+  latitude?: number;
+  longitude?: number;
 };
 
 export type SelectedMapLocation = {
@@ -58,6 +62,9 @@ export type DashboardSettings = {
   theme: Theme;
   defaultMapLocation: DefaultMapLocation;
   defaultMapZoom: number;
+  cityPinColor: string;
+  cardHighlightColor: string;
+  locationPinColor: string;
   language: Language;
   isMapVisible: boolean;
 };
