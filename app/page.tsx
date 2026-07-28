@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
 } from "react";
 import LeafletWorldMap from "./LeafletWorldMap";
 import { useDashboardSync } from "./hooks/useDashboardSync";
@@ -105,6 +106,14 @@ export default function HomePage() {
   const mapRequestRef = useRef(0);
   const hasInitializedMapRef = useRef(false);
   const toolbarTimeoutRef = useRef<number | null>(null);
+  const dragGestureRef = useRef<{
+    pointerId: number;
+    sourceId: string;
+    startX: number;
+    startY: number;
+    active: boolean;
+    target: { id: string; after: boolean } | null;
+  } | null>(null);
   const t = (key: Parameters<typeof translate>[1], values?: Record<string, string | number>) =>
     translate(language, key, values);
 
@@ -770,6 +779,68 @@ export default function HomePage() {
     });
   }
 
+  function startClockDrag(event: ReactPointerEvent<HTMLElement>, sourceId: string) {
+    if (event.button !== 0 || !event.isPrimary) return;
+    const target = event.target as HTMLElement;
+    if (target.closest("button, input, select, textarea, a, [role='menu']")) return;
+
+    dragGestureRef.current = {
+      pointerId: event.pointerId,
+      sourceId,
+      startX: event.clientX,
+      startY: event.clientY,
+      active: false,
+      target: null,
+    };
+  }
+
+  function updateClockDrag(event: ReactPointerEvent<HTMLElement>) {
+    const gesture = dragGestureRef.current;
+    if (!gesture || gesture.pointerId !== event.pointerId) return;
+
+    if (!gesture.active) {
+      const distance = Math.hypot(event.clientX - gesture.startX, event.clientY - gesture.startY);
+      if (distance < 6) return;
+      gesture.active = true;
+      event.currentTarget.setPointerCapture(event.pointerId);
+      setDraggedClockId(gesture.sourceId);
+    }
+
+    event.preventDefault();
+    const element = document.elementFromPoint(event.clientX, event.clientY);
+    const card = element?.closest<HTMLElement>(".clock-card[data-clock-id]");
+    const targetId = card?.dataset.clockId;
+    if (!card || !targetId || targetId === gesture.sourceId) {
+      gesture.target = null;
+      setDropTarget(null);
+      return;
+    }
+
+    const rect = card.getBoundingClientRect();
+    const horizontalDistance = Math.abs(event.clientX - (rect.left + rect.width / 2)) / rect.width;
+    const verticalDistance = Math.abs(event.clientY - (rect.top + rect.height / 2)) / rect.height;
+    const after = horizontalDistance > verticalDistance
+      ? event.clientX > rect.left + rect.width / 2
+      : event.clientY > rect.top + rect.height / 2;
+    gesture.target = { id: targetId, after };
+    setDropTarget(gesture.target);
+  }
+
+  function finishClockDrag(event: ReactPointerEvent<HTMLElement>) {
+    const gesture = dragGestureRef.current;
+    if (!gesture || gesture.pointerId !== event.pointerId) return;
+
+    if (gesture.active && gesture.target) {
+      moveClock(gesture.sourceId, gesture.target.id, gesture.target.after);
+    }
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    dragGestureRef.current = null;
+    setDraggedClockId(null);
+    setDropTarget(null);
+  }
+
   function applyFont() {
     const family = fontInput.trim();
     if (!family) {
@@ -1394,40 +1465,17 @@ export default function HomePage() {
                 dropTarget?.id === clock.id ? (dropTarget.after ? "drop-after" : "drop-before") : "",
               ].filter(Boolean).join(" ")}
               id={`clock-${clock.id}`}
+              data-clock-id={clock.id}
               style={{
                 ...cardStyle,
                 ...(highlightedClockId === clock.id
                   ? { "--map-highlight-color": cardHighlightColor }
                   : {}),
               } as CSSProperties}
-              draggable
-              onDragStart={(event) => {
-                event.dataTransfer.effectAllowed = "move";
-                event.dataTransfer.setData("text/plain", clock.id);
-                setDraggedClockId(clock.id);
-              }}
-              onDragOver={(event) => {
-                event.preventDefault();
-                event.dataTransfer.dropEffect = "move";
-                const rect = event.currentTarget.getBoundingClientRect();
-                const horizontalDistance = Math.abs(event.clientX - (rect.left + rect.width / 2)) / rect.width;
-                const verticalDistance = Math.abs(event.clientY - (rect.top + rect.height / 2)) / rect.height;
-                const after = horizontalDistance > verticalDistance
-                  ? event.clientX > rect.left + rect.width / 2
-                  : event.clientY > rect.top + rect.height / 2;
-                setDropTarget({ id: clock.id, after });
-              }}
-              onDrop={(event) => {
-                event.preventDefault();
-                const sourceId = event.dataTransfer.getData("text/plain") || draggedClockId;
-                if (sourceId) moveClock(sourceId, clock.id, dropTarget?.after ?? false);
-                setDraggedClockId(null);
-                setDropTarget(null);
-              }}
-              onDragEnd={() => {
-                setDraggedClockId(null);
-                setDropTarget(null);
-              }}
+              onPointerDown={(event) => startClockDrag(event, clock.id)}
+              onPointerMove={updateClockDrag}
+              onPointerUp={finishClockDrag}
+              onPointerCancel={finishClockDrag}
               onContextMenu={(event) => {
                 event.preventDefault();
                 event.stopPropagation();

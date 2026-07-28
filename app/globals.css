@@ -767,6 +767,9 @@ button:focus-visible, input:focus-visible {
   border: 1px solid var(--terminal-border);
   border-radius: 2px;
   box-shadow: 5px 5px 0 rgba(0, 0, 0, .55);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
 }
 
 .clock-card.is-local {
@@ -788,8 +791,7 @@ button:focus-visible, input:focus-visible {
   to { transform: translateY(-4px); }
 }
 
-.clock-card[draggable="true"] { cursor: grab; }
-.clock-card[draggable="true"]:active { cursor: grabbing; }
+.clock-card:active { cursor: grabbing; }
 
 .clock-card.is-dragging {
   opacity: .4;
